@@ -52,7 +52,7 @@ export default function HeroStatic() {
   return (
     <div className="relative bg-gradient-to-b from-[#101212] to-[#08201D]">
       <section
-        className="relative min-h-[85svh] sm:min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-40 lg:pt-48 pb-8 sm:pb-10 lg:pb-12 overflow-hidden"
+        className="relative min-h-[85svh] sm:min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-40 lg:pt-48 pb-8 sm:pb-16 lg:pb-[20rem] overflow-hidden"
         aria-label="Hero"
       >
         {/* Desktop stack */}
@@ -125,15 +125,18 @@ export default function HeroStatic() {
 function CopyBlock({ zClass = "z-20" }: { zClass?: string }) {
   return (
     <div
-      className={`relative ${zClass} px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mt-16 sm:mt-20 lg:mt-24`}
+      className={`relative ${zClass} px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-8 mb-12 sm:mb-16 lg:mb-12`}
     >
       <div className="max-w-4xl mx-auto text-center">
         <h1
           data-anim="headline"
-          className="text-4xl font-bold sm:text-6xl lg:text-7xl leading-tight"
+          className="text-5xl font-extrabold sm:text-7xl lg:text-8xl leading-tight tracking-tight"
         >
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-300">
-            Plan smart. Travel better.
+          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-300">
+            Plan Smart.
+          </span>
+          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-300">
+            Travel Better
           </span>
         </h1>
         <p
