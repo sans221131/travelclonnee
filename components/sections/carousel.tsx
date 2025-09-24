@@ -139,7 +139,7 @@ export default function Carousel({
         const isMobile =
           typeof window !== "undefined" && window.innerWidth < 768;
         const baseIntensity = dramatic ? 1.0 : 0.65;
-        const blurMax = dramatic ? (isMobile ? 2 : 3) : isMobile ? 1 : 1.5;
+        const neighborRange = 2; // only animate active and close neighbors
 
         for (let i = 0; i < cards.length; i++) {
           const el = cards[i];
@@ -151,26 +151,34 @@ export default function Carousel({
           }
 
           // Skip applying scroll effects during roulette to let CSS styling work
-          if (isRouletting) {
-            // Only update the active index during roulette, don't apply visual effects
-            continue;
-          }
+          if (isRouletting) continue;
 
-          const t = Math.max(-1, Math.min(1, delta / (root.clientWidth / 2)));
-          const depth = 1 - Math.min(1, Math.abs(t));
-          const rot = -t * 18 * baseIntensity;
-          const scale = 0.86 + depth * 0.14;
-          const opacity = 0.55 + depth * 0.45;
-          const blur = Math.max(0, Math.abs(t) * blurMax);
+          // Only animate a small window around the active card to reduce work
+          // We don't know bestIdx yet on the first iterations, so approximate by distance in px
+          // and then reset outside range afterwards using bestIdx.
+        }
 
-          el.style.transform = `translateZ(0) perspective(1000px) rotateY(${rot}deg) scale(${scale})`;
-          el.style.opacity = `${opacity}`;
-
-          const img = el.querySelector<HTMLElement>("[data-img]");
-          if (img) {
-            img.style.filter = `blur(${blur}px) saturate(${
-              0.6 + depth * 0.4
-            }) brightness(${0.8 + depth * 0.2})`;
+        // Apply transforms only to neighbors, reset others
+        if (!isRouletting) {
+          const activeIdx = bestIdx;
+          const start = Math.max(0, activeIdx - neighborRange);
+          const end = Math.min(cards.length - 1, activeIdx + neighborRange);
+          for (let i = 0; i < cards.length; i++) {
+            const el = cards[i];
+            if (i < start || i > end) {
+              // Reset styles for far cards
+              el.style.transform = "";
+              el.style.opacity = "";
+              continue;
+            }
+            const delta = centers[i] - viewCenter;
+            const t = Math.max(-1, Math.min(1, delta / (root.clientWidth / 2)));
+            const depth = 1 - Math.min(1, Math.abs(t));
+            const rot = -t * 18 * baseIntensity;
+            const scale = 0.86 + depth * 0.14;
+            const opacity = 0.55 + depth * 0.45;
+            el.style.transform = `translateZ(0) perspective(1000px) rotateY(${rot}deg) scale(${scale})`;
+            el.style.opacity = `${opacity}`;
           }
         }
 
@@ -506,7 +514,7 @@ export default function Carousel({
                     alt={p.alt || p.title}
                     fill
                     sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
-                    className={`object-cover object-center transition-[filter,transform,opacity] duration-500 group-hover:scale-105 ${
+                    className={`object-cover object-center transition-[transform,opacity] duration-500 group-hover:scale-105 ${
                       imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
                     }`}
                     priority={i === 0}
@@ -625,7 +633,7 @@ export default function Carousel({
                   alt={p.alt || p.title}
                   fill
                   sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
-                  className={`object-cover object-center transition-[filter,transform,opacity] duration-500 group-hover:scale-105 ${
+                  className={`object-cover object-center transition-[transform,opacity] duration-500 group-hover:scale-105 ${
                     imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
                   }`}
                   priority={i === 0}
