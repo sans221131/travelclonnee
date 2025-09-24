@@ -83,7 +83,19 @@ function fmtDate(iso?: string) {
     return d.toLocaleDateString(undefined, {
       day: "2-digit",
       month: "short",
-      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function fmtDateShort(iso?: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "short",
     });
   } catch {
     return iso;
@@ -449,11 +461,35 @@ export default function TripBuilderLite() {
                       title="Where are you traveling from?"
                       subtitle="Major cities with airports"
                     >
-                      <ChoiceGrid
-                        options={ORIGIN_CITIES}
-                        value={answers.from}
-                        onChange={(v) => setAnswer("from", v)}
-                      />
+                      {/* Mobile: dropdown select */}
+                      <div className="sm:hidden">
+                        <Labeled field="origin" label="Origin">
+                          <select
+                            id="origin"
+                            className="input"
+                            value={answers.from ?? ""}
+                            onChange={(e) => setAnswer("from", e.target.value)}
+                          >
+                            <option value="" disabled>
+                              Select your traveling point
+                            </option>
+                            {ORIGIN_CITIES.map((city) => (
+                              <option key={city} value={city}>
+                                {city}
+                              </option>
+                            ))}
+                          </select>
+                        </Labeled>
+                      </div>
+
+                      {/* Desktop: grid of choices */}
+                      <div className="hidden sm:block">
+                        <ChoiceGrid
+                          options={ORIGIN_CITIES}
+                          value={answers.from}
+                          onChange={(v) => setAnswer("from", v)}
+                        />
+                      </div>
                     </StepShell>
                   )}
 
@@ -487,11 +523,37 @@ export default function TripBuilderLite() {
                       title="Pick a destination"
                       subtitle="We’ll refine specifics after you submit"
                     >
-                      <ChoiceGrid
-                        options={DESTINATION_CHOICES}
-                        value={answers.destination}
-                        onChange={(v) => setAnswer("destination", v)}
-                      />
+                      {/* Mobile: dropdown select */}
+                      <div className="sm:hidden">
+                        <Labeled field="destination" label="Destination">
+                          <select
+                            id="destination"
+                            className="input"
+                            value={answers.destination ?? ""}
+                            onChange={(e) =>
+                              setAnswer("destination", e.target.value)
+                            }
+                          >
+                            <option value="" disabled>
+                              Select a destination
+                            </option>
+                            {DESTINATION_CHOICES.map((d) => (
+                              <option key={d} value={d}>
+                                {d}
+                              </option>
+                            ))}
+                          </select>
+                        </Labeled>
+                      </div>
+
+                      {/* Desktop: grid of choices */}
+                      <div className="hidden sm:block">
+                        <ChoiceGrid
+                          options={DESTINATION_CHOICES}
+                          value={answers.destination}
+                          onChange={(v) => setAnswer("destination", v)}
+                        />
+                      </div>
                     </StepShell>
                   )}
 
@@ -716,16 +778,26 @@ export default function TripBuilderLite() {
                               answers.destination || answers.seededDestination
                             }
                           />
-                          <Row term="Start" def={fmtDate(answers.startDate)} />
-                          <Row term="End" def={fmtDate(answers.endDate)} />
-                          <Row
-                            term="Adults"
-                            def={String(answers.adults ?? 0)}
-                          />
-                          <Row
-                            term="Children"
-                            def={String(answers.children ?? 0)}
-                          />
+                          <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+                            <Row
+                              term="Start"
+                              def={fmtDateShort(answers.startDate)}
+                            />
+                            <Row
+                              term="End"
+                              def={fmtDateShort(answers.endDate)}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+                            <Row
+                              term="Adults"
+                              def={String(answers.adults ?? 0)}
+                            />
+                            <Row
+                              term="Children"
+                              def={String(answers.children ?? 0)}
+                            />
+                          </div>
                           <Row term="Name" def={answers.passengerName} />
                           <Row
                             term="Phone"
@@ -882,16 +954,16 @@ function StepShell(props: {
   return (
     <div className="flex flex-col gap-2.5 sm:gap-3 md:gap-5">
       <div>
-        <h3 className="text-base font-semibold text-white leading-tight sm:text-lg md:text-xl lg:text-2xl">
+        <h3 className="text-2xl font-extrabold text-white leading-tight sm:text-2xl md:text-3xl lg:text-3xl tracking-tight">
           {props.title}
         </h3>
         {props.subtitle && (
-          <p className="mt-1 text-xs text-zinc-400 sm:text-sm sm:mt-1.5">
+          <p className="mt-1.5 text-xs text-zinc-400 sm:text-sm">
             {props.subtitle}
           </p>
         )}
       </div>
-      <div className="mt-0.5">{props.children}</div>
+      <div className="mt-3 sm:mt-4">{props.children}</div>
     </div>
   );
 }
@@ -962,7 +1034,7 @@ function Labeled({
 }) {
   return (
     <label htmlFor={field} className="block">
-      <div className="mb-1 text-xs uppercase tracking-wide text-zinc-400">
+      <div className="mb-1 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
         {label}
       </div>
       {children}
@@ -1014,8 +1086,12 @@ function NumberField({
 function Row({ term, def }: { term: string; def?: string | null }) {
   return (
     <div className="rounded-lg bg-white/5 p-3">
-      <dt className="text-xs uppercase tracking-wide text-zinc-400">{term}</dt>
-      <dd className="mt-1 text-sm text-white">{def || "—"}</dd>
+      <dt className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
+        {term}
+      </dt>
+      <dd className="mt-1.5 text-base sm:text-lg text-white font-bold leading-tight">
+        {def || "—"}
+      </dd>
     </div>
   );
 }
