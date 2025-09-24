@@ -5,6 +5,7 @@ import Image from "next/image";
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { BackgroundLines } from "@/components/ui/background-lines";
 gsap.registerPlugin(ScrollTrigger);
 
 type Card = {
@@ -271,7 +272,7 @@ export default function HeroStatic() {
     >
       <section
         ref={pinRef}
-        className="relative min-h-[85svh] sm:min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-40 lg:pt-48 pb-16 sm:pb-20 lg:pb-28 overflow-hidden"
+        className="relative min-h-[85svh] sm:min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-40 lg:pt-48 pb-8 sm:pb-10 lg:pb-12 overflow-hidden"
         aria-label="Hero"
       >
         {/* Desktop stack */}
@@ -354,7 +355,9 @@ export default function HeroStatic() {
           </div>
         </div>
 
-        <CopyBlock zClass="z-20" />
+        <BackgroundLines className="relative z-20 bg-transparent dark:bg-transparent h-[22rem] sm:h-[26rem] lg:h-[28rem]">
+          <CopyBlock zClass="z-20" />
+        </BackgroundLines>
       </section>
     </div>
   );
@@ -365,7 +368,7 @@ export default function HeroStatic() {
 function CopyBlock({ zClass = "z-20" }: { zClass?: string }) {
   return (
     <div
-      className={`relative ${zClass} px-4 mx-auto max-w-7xl sm:px-6 lg:px-8`}
+      className={`relative ${zClass} px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mt-10 sm:mt-16 lg:mt-20`}
     >
       <div className="max-w-4xl mx-auto text-center">
         <h1
