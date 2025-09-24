@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import SectionHeader from "@/components/sections/SectionHeader";
 
 /* --------------------------------------------------------------------------
  * Smart FAQ — two-pane layout
@@ -316,21 +317,17 @@ export default function SmartFAQ() {
   return (
     <section className="relative w-full bg-transparent text-white/90">
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
-        <header className="mb-8 sm:mb-10">
-          <p className="text-xs tracking-[0.25em] text-white/50 uppercase">
+        <div className="mb-8 sm:mb-10">
+          <SectionHeader
+            title="Smart FAQ"
+            subtitle="Search, filter, deep link. Press / to focus search."
+            align="left"
+            tone="light"
+          />
+          <p className="mt-2 text-xs tracking-[0.25em] text-white/50 uppercase">
             Answers, on tap
           </p>
-          <h2 className="mt-2 text-6xl font-semibold tracking-tight text-white">
-            Smart FAQ
-          </h2>
-          <p className="mt-3 text-base sm:text-xl lg:text-2xl text-white/70">
-            Search, filter, deep link. Press{" "}
-            <kbd className="px-1 py-0.5 rounded bg-white/10 text-white/80">
-              /
-            </kbd>{" "}
-            to focus search.
-          </p>
-        </header>
+        </div>
 
         {/* Two-pane layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

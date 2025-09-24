@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import SectionHeader from "@/components/sections/SectionHeader";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -334,17 +335,15 @@ export default function DigitalDockingDivs({
       </div>
 
       <div className="mx-auto max-w-[980px] px-3 sm:px-4 lg:px-5 pt-10 sm:pt-14 lg:pt-16 pb-12 sm:pb-16 lg:pb-20">
-        <header className="mb-6 sm:mb-7 lg:mb-9 text-center">
-          <h2
+        <div className="mb-6 sm:mb-7 lg:mb-9">
+          <SectionHeader
             id="howitworks-heading"
-            className="text-6xl font-semibold tracking-tight"
-          >
-            {heading}
-          </h2>
-          <p className="mt-2 text-base sm:text-xl lg:text-2xl text-zinc-400 max-w-2xl mx-auto">
-            Five phases. The runway lights guide you from left to right.
-          </p>
-        </header>
+            title={heading}
+            subtitle="Five phases. The runway lights guide you from left to right."
+            align="center"
+            tone="light"
+          />
+        </div>
 
         <ol className="space-y-4 sm:space-y-6 lg:space-y-7">
           {steps.map((s: Step, i: number) => (

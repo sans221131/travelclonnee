@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import SectionHeader from "@/components/sections/SectionHeader";
 
 /* ---------------- Config ---------------- */
 const REF_REGEX = /\bINV-[A-Z0-9]{5,10}\b/;
@@ -236,15 +237,14 @@ export default function InvoiceQuickPay() {
       <div className="relative mx-auto max-w-5xl px-4 md:px-8 py-14 md:py-20">
         <StepperDark step={step} />
 
-        <header className="text-center">
-          <h2 className="text-6xl font-semibold tracking-tight">
-            Have an Invoice?
-          </h2>
-          <p className="mt-2 text-base sm:text-xl lg:text-2xl text-zinc-400">
-            Paste or type your reference to review details and continue to
-            payment.
-          </p>
-        </header>
+        <div className="text-center">
+          <SectionHeader
+            title="Have an Invoice?"
+            subtitle="Paste or type your reference to review details and continue to payment."
+            align="center"
+            tone="light"
+          />
+        </div>
 
         {/* GLOW: wider linear glow behind the card */}
         <div className="relative mt-8">
