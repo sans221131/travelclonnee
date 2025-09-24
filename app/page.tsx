@@ -18,7 +18,7 @@ import RunwayBands from "@/components/how-it-works/DigitalDockingDivs";
 
 // NEW: Smart FAQ (client)
 import SmartFAQ from "@/components/smart-faq/SmartFAQ";
-import TripBuilderLite from "@/components/trip/TripBuilderLite";
+import TripBuilderWrapper from "@/components/trip/TripBuilderWrapper";
 
 type SectionProps = {
   id: string;
@@ -166,7 +166,7 @@ export default function HomePage() {
         <RunwayBands />
 
         {/* Section 4: Trip Builder Lite */}
-        <TripBuilderLite />
+        <TripBuilderWrapper />
 
         {/* Section 5: Have an Invoice?  — NOT full screen */}
         {/* Replaces the old FullScreenSection so it isn't 100svh. */}
