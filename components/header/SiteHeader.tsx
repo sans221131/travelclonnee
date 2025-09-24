@@ -18,7 +18,7 @@ export default function SiteHeader() {
             >
               <span className="inline-block h-8 w-8 rounded bg-white/90" />
               <span className="hidden sm:inline text-white/90 font-semibold tracking-wide">
-                TRAVELO
+                LeafWay 
               </span>
             </Link>
           </div>
@@ -28,7 +28,7 @@ export default function SiteHeader() {
               href="#destinations"
               className="text-base text-white/90 hover:text-white transition-opacity"
             >
-              Destinations
+              Solutions
             </a>
             <a
               href="#trip-builder"
