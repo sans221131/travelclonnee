@@ -255,8 +255,10 @@ export default function InvoiceQuickPay() {
             <div className="grid grid-cols-1 md:grid-cols-[112px_1fr]">
               {/* Stub: top on mobile, left on md+ */}
               <aside className="relative rounded-t-2xl md:rounded-t-none md:rounded-l-3xl bg-[radial-gradient(120px_60px_at_30%_25%,rgba(255,255,255,.08),transparent_60%),radial-gradient(140px_70px_at_70%_75%,rgba(255,255,255,.08),transparent_60%)] p-4">
-                <div className="flex items-center justify-between md:block">
-                  <div>
+                {/* Mobile: REF above barcode, with padding. Desktop: original layout. */}
+                <div className="flex flex-col gap-3 md:block">
+                  {/* REF + value */}
+                  <div className="pb-1 md:pb-0">
                     <div className="text-[10px] font-semibold tracking-[0.2em] text-zinc-400">
                       REF
                     </div>
@@ -265,9 +267,17 @@ export default function InvoiceQuickPay() {
                     </div>
                   </div>
 
-                  {/* Stacked horizontal-bar barcode */}
+                  {/* Barcode: rotate 90° and widen on mobile; normal on desktop */}
                   <div
-                    className="mt-3 md:mt-4 ml-auto md:ml-0 h-24 md:h-28 w-16 md:w-12 overflow-hidden rounded bg-zinc-900/60 px-1.5 py-2 flex flex-col"
+                    className={[
+                      "overflow-hidden rounded bg-zinc-900/60 flex flex-col",
+                      "px-1.5 py-2",
+                      "h-70 w-24",           // mobile: smaller height, wider width
+                      "md:h-28 md:w-12",     // desktop original (unchanged)
+                      "origin-center rotate-90 md:rotate-0",
+                      "self-center md:self-auto",
+                      "scale-[1.05] md:scale-100",
+                    ].join(" ")}
                     aria-label="barcode"
                   >
                     {barcodeBars.map((b, i) =>
@@ -275,28 +285,19 @@ export default function InvoiceQuickPay() {
                         <div key={i} style={{ marginTop: b.gapTop }}>
                           <div
                             className="w-full rounded-[1px]"
-                            style={{
-                              height: b.h,
-                              background: "rgba(255,255,255,0.88)",
-                            }}
+                            style={{ height: b.h, background: "rgba(255,255,255,0.88)" }}
                           />
                         </div>
                       ) : (
                         <div key={i} style={{ marginTop: b.gapTop }}>
                           <div
                             className="w-full rounded-[1px]"
-                            style={{
-                              height: b.h1,
-                              background: "rgba(255,255,255,0.88)",
-                            }}
+                            style={{ height: b.h1, background: "rgba(255,255,255,0.88)" }}
                           />
                           <div style={{ height: b.innerGap }} />
                           <div
                             className="w-full rounded-[1px]"
-                            style={{
-                              height: b.h2,
-                              background: "rgba(255,255,255,0.88)",
-                            }}
+                            style={{ height: b.h2, background: "rgba(255,255,255,0.88)" }}
                           />
                         </div>
                       )
@@ -317,10 +318,7 @@ export default function InvoiceQuickPay() {
                       INVOICE
                     </div>
                     <div className="mt-1 sm:mt-2 flex flex-wrap items-center gap-2 sm:gap-3 text-[13px] sm:text-sm text-zinc-300">
-                      <Meta
-                        label="Date"
-                        value={invoice ? fmtDate(invoice.dateISO) : "— —"}
-                      />
+                      <Meta label="Date" value={invoice ? fmtDate(invoice.dateISO) : "— —"} />
                       <span className="hidden sm:inline h-3 w-px bg-white/10" />
                       <Meta label="Bill to" value={invoice?.billTo || "— —"} />
                     </div>
@@ -424,9 +422,7 @@ export default function InvoiceQuickPay() {
                   <InfoCardDark
                     title="Status"
                     value={
-                      invoice?.status === "unpaid"
-                        ? "Unpaid"
-                        : invoice?.status || "-"
+                      invoice?.status === "unpaid" ? "Unpaid" : invoice?.status || "-"
                     }
                   />
                   <InfoCardDark title="Billed to" value={invoice?.billTo || "-"} />
