@@ -248,7 +248,7 @@ export default function DigitalDockingDivs({
             className="pointer-events-none absolute top-10 left-6 flex w-12 -translate-x-1/2 justify-center md:top-10 md:left-1/2 md:w-16 lg:w-20"
           >
             <Image
-              src="/icons/plane.png"
+              src="/images/how-it-works/plane.png"
               alt=""
               width={160}
               height={80}
