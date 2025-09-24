@@ -3,6 +3,7 @@
 
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
+import SectionHeader from "@/components/sections/SectionHeader";
 
 type Place = {
   id: string;
@@ -411,26 +412,19 @@ export default function Carousel({
       {/* Header */}
       <div className="absolute top-0 inset-x-0 z-10 bg-gradient-to-b from-black/50 via-black/20 to-transparent">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 lg:pt-6">
-          <div className="text-center">
-            <h2 className="text-6xl sm:text-6xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
-              {title}
-            </h2>
-            <p
-              className="mt-3 sm:mt-4 text-base sm:text-xl lg:text-2xl text-white/80 leading-relaxed max-w-2xl mx-auto drop-shadow-md"
-              aria-live="polite"
-            >
-              {isRouletting
-                ? "🎲 Selecting destination..."
-                : "Discover your next adventure"}
-            </p>
-          </div>
+          <SectionHeader
+            title={title}
+            subtitle="Explore the world's most exciting destinations and find your next adventure"
+            align="center"
+            tone="light"
+          />
         </div>
       </div>
 
       {/* Carousel rail */}
       <div
         ref={scrollerRef}
-        className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-[120px] sm:top-[140px] md:top-[160px] overflow-x-auto overflow-y-hidden no-scrollbar overscroll-x-contain snap-x snap-mandatory snap-always flex items-center gap-6 sm:gap-8 focus:outline-none"
+        className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-[76px] sm:top-[140px] md:top-[160px] overflow-x-auto overflow-y-hidden no-scrollbar overscroll-x-contain snap-x snap-mandatory snap-always flex items-center gap-6 sm:gap-8 focus:outline-none"
         style={{
           paddingLeft: `${gutters.left}px`,
           paddingRight: `${gutters.right}px`,
@@ -559,18 +553,7 @@ export default function Carousel({
                 </div>
               </div>
 
-              {/* Enhanced mobile roulette effects */}
-              {isRouletting && (
-                <>
-                  {/* Mobile-specific spinning effect */}
-                  <div className="md:hidden absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
-                    <div className="absolute inset-0 bg-gradient-radial from-yellow-400/30 via-red-400/20 to-transparent animate-spin"></div>
-                    <div className="absolute inset-2 bg-gradient-radial from-transparent via-white/10 to-transparent animate-pulse"></div>
-                  </div>
-                  {/* Spinning border effect for mobile */}
-                  <div className="md:hidden absolute -inset-1 rounded-3xl bg-gradient-to-r from-red-400 via-yellow-400 to-red-400 animate-spin opacity-75"></div>
-                </>
-              )}
+              {/* Removed mobile roulette color overlays to prevent orange/yellow tint */}
 
               {/* Mobile swipe indicator - only show on first card when not rouletting */}
               {i === 0 && !isRouletting && (
@@ -596,6 +579,34 @@ export default function Carousel({
           <div className="relative">
             {/* MOBILE: Horizontal scroller */}
             <div className="md:hidden">
+              {/* helper text with bi-directional arrows */}
+              <div className="pb-2 text-center text-xs text-white/70 flex items-center justify-center gap-2">
+                <svg
+                  aria-hidden="true"
+                  className="h-3 w-3 text-white/60"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                <span>Scroll the pills to see more options</span>
+                <svg
+                  aria-hidden="true"
+                  className="h-3 w-3 text-white/60"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </div>
               {/* edge fades on mobile */}
               <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black via-black/70 to-transparent z-10" />
               <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black via-black/70 to-transparent z-10" />
@@ -620,7 +631,7 @@ export default function Carousel({
                     aria-selected={i === pillActive}
                     aria-controls={`${id}-slide-${i}`}
                     disabled={isRouletting}
-                    className={` relative snap-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-sm min-w-[80px] text-center touch-manipulation ${
+                    className={` relative inline-flex items-center justify-center snap-center whitespace-nowrap rounded-full border px-4 pt-[2px] pb-2 text-sm font-medium backdrop-blur-sm w-auto text-center touch-manipulation ${
                       isRouletting ? "opacity-75" : ""
                     } ${
                       i === rouletteTarget && isRouletting
