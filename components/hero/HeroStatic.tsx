@@ -214,11 +214,6 @@ export default function HeroStatic() {
         "[data-anim='subhead']",
         { y: 16, opacity: 0, duration: 0.6, ease: "power2.out" },
         0.1
-      )
-      .from(
-        "[data-anim='cta']",
-        { scale: 0.95, opacity: 0, duration: 0.5, ease: "power2.out" },
-        0.2
       );
 
     return () => {
@@ -276,7 +271,7 @@ export default function HeroStatic() {
     >
       <section
         ref={pinRef}
-        className="relative min-h-[100svh] mb-12 pt-32 sm:pt-40 lg:pt-48 pb-16 sm:pb-20 lg:pb-28 overflow-hidden"
+        className="relative min-h-[85svh] sm:min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-40 lg:pt-48 pb-16 sm:pb-20 lg:pb-28 overflow-hidden"
         aria-label="Hero"
       >
         {/* Desktop stack */}
@@ -330,7 +325,7 @@ export default function HeroStatic() {
         </div>
 
         {/* Mobile grid with real videos */}
-        <div className="lg:hidden absolute inset-x-0 bottom-0 z-10 px-4 pb-4">
+        <div className="lg:hidden absolute inset-x-0 bottom-8 z-10 px-3 pb-3">
           <div className="grid grid-cols-2 gap-3">
             {CARDS.map((c, i) => (
               <div
@@ -344,7 +339,7 @@ export default function HeroStatic() {
                   ref={(el) => {
                     mobileVideoRefs.current[c.id] = el;
                   }}
-                  className="h-28 w-full object-cover"
+                  className="h-32 w-full object-cover"
                   src={c.video}
                   poster={c.img}
                   muted
@@ -388,27 +383,7 @@ function CopyBlock({ zClass = "z-20" }: { zClass?: string }) {
           Tailored trips for Indians and NRIs. Real quotes, secure payments, and
           human help when you need it.
         </p>
-        <a
-          data-anim="cta"
-          href="#trip-builder"
-          className="inline-flex items-center px-8 py-4 mt-10 sm:mt-12 lg:mt-16 font-semibold text-white text-lg transition-colors bg-zinc-900 rounded-lg hover:bg-zinc-800 focus:bg-zinc-800"
-        >
-          Start Trip Builder
-          <svg
-            className="w-6 h-6 ml-3 -mr-1"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13 9l3 3-3 3M5 12h11"
-            />
-          </svg>
-        </a>
+        {/* CTA removed per request */}
       </div>
     </div>
   );

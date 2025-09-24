@@ -569,7 +569,7 @@ export default function TripBuilderLite() {
 
                   {current === "passengerName" && (
                     <StepShell title="What's the passenger name?">
-                      <Labeled field="pname" label="Full name">
+                      <Labeled field="pname" label="">
                         <input
                           id="pname"
                           type="text"
@@ -593,7 +593,7 @@ export default function TripBuilderLite() {
                   {current === "phoneNumber" && (
                     <StepShell title="Best phone number?">
                       <div className="grid grid-cols-[100px_1fr] gap-2 sm:grid-cols-[140px_1fr] sm:gap-3">
-                        <Labeled field="pcode" label="Country code">
+                        <Labeled field="pcode" label="">
                           <input
                             id="pcode"
                             type="tel"
@@ -610,7 +610,7 @@ export default function TripBuilderLite() {
                             className="input"
                           />
                         </Labeled>
-                        <Labeled field="pnum" label="Number">
+                        <Labeled field="pnum" label="">
                           <input
                             id="pnum"
                             type="tel"
@@ -634,7 +634,7 @@ export default function TripBuilderLite() {
 
                   {current === "email" && (
                     <StepShell title="Where should we email your itinerary?">
-                      <Labeled field="email" label="Email">
+                      <Labeled field="email" label="">
                         <input
                           id="email"
                           type="email"
