@@ -4,6 +4,7 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import SectionHeader from "@/components/sections/SectionHeader";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
 
 type Place = {
   id: string;
@@ -450,123 +451,247 @@ export default function Carousel({
             aria-roledescription="slide"
             aria-label={`${p.title} (${i + 1} of ${items.length})`}
           >
-            {/* Mobile-optimized aspect ratio - closer to portrait but not exactly 9:16 */}
-            <div
-              className={`relative aspect-[10/16] md:aspect-[16/9] w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/50 group transition-all duration-500 ${
-                i === active
-                  ? "ring-4 ring-white/90 ring-offset-4 ring-offset-black scale-105"
-                  : "ring-1 ring-white/20"
-              }`}
-              style={
-                isRouletting && i === active
-                  ? {
-                      // Force selection styling during roulette
-                      transform: "scale(1.05)",
-                      filter: "brightness(1.1) saturate(1.1)",
-                      zIndex: 10,
-                    }
-                  : {}
-              }
-            >
-              {/* Force selection ring during roulette */}
-              {isRouletting && i === active && (
-                <div className="absolute -inset-1 rounded-3xl ring-4 ring-white/90 ring-offset-4 ring-offset-black pointer-events-none" />
-              )}
+            {i === active ? (
+              <BackgroundGradient
+                containerClassName="rounded-3xl isolate"
+                glowClassName="opacity-80"
+                animate
+              >
+                {/* Mobile-optimized aspect ratio - closer to portrait but not exactly 9:16 */}
+                <div
+                  className={`relative aspect-[10/16] md:aspect-[16/9] w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/50 group transition-all duration-500 ${
+                    i === active ? "scale-105" : "ring-1 ring-white/20"
+                  }`}
+                  style={
+                    isRouletting && i === active
+                      ? {
+                          // Force selection styling during roulette
+                          transform: "scale(1.05)",
+                          filter: "brightness(1.1) saturate(1.1)",
+                          zIndex: 10,
+                        }
+                      : {}
+                  }
+                >
+                  {/* Force selection ring during roulette */}
+                  {isRouletting && i === active && (
+                    <div className="absolute -inset-1 rounded-3xl ring-4 ring-white/90 ring-offset-4 ring-offset-black pointer-events-none" />
+                  )}
 
-              {/* Same radiating highlight for active card whether rouletting or static */}
-              {i === active && (
-                <>
-                  <div className="pointer-events-none absolute -inset-2 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.30),rgba(255,255,255,0.10),transparent)] animate-pulse" />
-                  <div
-                    className="pointer-events-none absolute -inset-4 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.20),rgba(255,255,255,0.05),transparent)] animate-pulse"
-                    style={{ animationDelay: "0.5s" }}
-                  />
-                </>
-              )}
+                  {/* Same radiating highlight for active card whether rouletting or static */}
+                  {i === active && (
+                    <>
+                      <div className="pointer-events-none absolute -inset-2 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.30),rgba(255,255,255,0.10),transparent)] animate-pulse" />
+                      <div
+                        className="pointer-events-none absolute -inset-4 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.20),rgba(255,255,255,0.05),transparent)] animate-pulse"
+                        style={{ animationDelay: "0.5s" }}
+                      />
+                    </>
+                  )}
 
-              {/* Loading skeleton */}
-              {!imagesLoaded.has(p.id) && (
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 animate-pulse">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-                  <div className="absolute bottom-4 left-4 right-4 space-y-2">
-                    <div className="h-6 bg-white/20 rounded-lg animate-pulse" />
-                    <div className="h-4 bg-white/10 rounded w-2/3 animate-pulse" />
-                  </div>
-                </div>
-              )}
-
-              <Image
-                data-img
-                src={p.image}
-                alt={p.alt || p.title}
-                fill
-                sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
-                className={`object-cover object-center transition-[filter,transform,opacity] duration-500 group-hover:scale-105 ${
-                  imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
-                }`}
-                priority={i === 0}
-                onLoad={() => handleImageLoad(p.id)}
-              />
-
-              <div
-                className="absolute inset-0 bg-black"
-                style={{ opacity: overlay }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
-
-              {/* Content overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                <div className="space-y-2">
-                  <div className="text-xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
-                    {p.title}
-                  </div>
-
-                  {p.subtitle ? (
-                    <div className="text-sm sm:text-lg text-white/90 drop-shadow-md font-medium">
-                      {p.subtitle}
-                    </div>
-                  ) : (
-                    <div className="text-sm sm:text-base text-white/75 drop-shadow-md">
-                      Discover amazing destinations
+                  {/* Loading skeleton */}
+                  {!imagesLoaded.has(p.id) && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 animate-pulse">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+                      <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                        <div className="h-6 bg-white/20 rounded-lg animate-pulse" />
+                        <div className="h-4 bg-white/10 rounded w-2/3 animate-pulse" />
+                      </div>
                     </div>
                   )}
 
-                  <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-white/30 transition-all duration-200 border border-white/30">
-                      <span>Explore</span>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
+                  <Image
+                    data-img
+                    src={p.image}
+                    alt={p.alt || p.title}
+                    fill
+                    sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
+                    className={`object-cover object-center transition-[filter,transform,opacity] duration-500 group-hover:scale-105 ${
+                      imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
+                    }`}
+                    priority={i === 0}
+                    onLoad={() => handleImageLoad(p.id)}
+                  />
+
+                  <div
+                    className="absolute inset-0 bg-black"
+                    style={{ opacity: overlay }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
+
+                  {/* Content overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                    <div className="space-y-2">
+                      <div className="text-xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
+                        {p.title}
+                      </div>
+
+                      {p.subtitle ? (
+                        <div className="text-sm sm:text-lg text-white/90 drop-shadow-md font-medium">
+                          {p.subtitle}
+                        </div>
+                      ) : (
+                        <div className="text-sm sm:text-base text-white/75 drop-shadow-md">
+                          Discover amazing destinations
+                        </div>
+                      )}
+
+                      <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-white/30 transition-all duration-200 border border-white/30">
+                          <span>Explore</span>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Removed mobile roulette color overlays to prevent orange/yellow tint */}
+
+                  {/* Mobile swipe indicator - only show on first card when not rouletting */}
+                  {i === 0 && !isRouletting && (
+                    <div className="md:hidden absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white/90 pointer-events-none border border-white/20 animate-bounce">
+                      Swipe →
+                    </div>
+                  )}
+
+                  {/* Shimmer for active card */}
+                  {i === active && !isRouletting && (
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+                  )}
+                </div>
+              </BackgroundGradient>
+            ) : (
+              /* Non-active card (no gradient wrapper) */
+              <div
+                className={`relative aspect-[10/16] md:aspect-[16/9] w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/50 group transition-all duration-500 ${
+                  i === active
+                    ? "ring-4 ring-white/90 ring-offset-4 ring-offset-black scale-105"
+                    : "ring-1 ring-white/20"
+                }`}
+                style={
+                  isRouletting && i === active
+                    ? {
+                        // Force selection styling during roulette
+                        transform: "scale(1.05)",
+                        filter: "brightness(1.1) saturate(1.1)",
+                        zIndex: 10,
+                      }
+                    : {}
+                }
+              >
+                {/* Force selection ring during roulette */}
+                {isRouletting && i === active && (
+                  <div className="absolute -inset-1 rounded-3xl ring-4 ring-white/90 ring-offset-4 ring-offset-black pointer-events-none" />
+                )}
+
+                {/* Same radiating highlight for active card whether rouletting or static */}
+                {i === active && (
+                  <>
+                    <div className="pointer-events-none absolute -inset-2 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.30),rgba(255,255,255,0.10),transparent)] animate-pulse" />
+                    <div
+                      className="pointer-events-none absolute -inset-4 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.20),rgba(255,255,255,0.05),transparent)] animate-pulse"
+                      style={{ animationDelay: "0.5s" }}
+                    />
+                  </>
+                )}
+
+                {/* Loading skeleton */}
+                {!imagesLoaded.has(p.id) && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 animate-pulse">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+                    <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                      <div className="h-6 bg-white/20 rounded-lg animate-pulse" />
+                      <div className="h-4 bg-white/10 rounded w-2/3 animate-pulse" />
+                    </div>
+                  </div>
+                )}
+
+                <Image
+                  data-img
+                  src={p.image}
+                  alt={p.alt || p.title}
+                  fill
+                  sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
+                  className={`object-cover object-center transition-[filter,transform,opacity] duration-500 group-hover:scale-105 ${
+                    imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
+                  }`}
+                  priority={i === 0}
+                  onLoad={() => handleImageLoad(p.id)}
+                />
+
+                <div
+                  className="absolute inset-0 bg-black"
+                  style={{ opacity: overlay }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
+
+                {/* Content overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                  <div className="space-y-2">
+                    <div className="text-xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
+                      {p.title}
+                    </div>
+
+                    {p.subtitle ? (
+                      <div className="text-sm sm:text-lg text-white/90 drop-shadow-md font-medium">
+                        {p.subtitle}
+                      </div>
+                    ) : (
+                      <div className="text-sm sm:text-base text-white/75 drop-shadow-md">
+                        Discover amazing destinations
+                      </div>
+                    )}
+
+                    <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-white/30 transition-all duration-200 border border-white/30">
+                        <span>Explore</span>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
+
+                {/* Removed mobile roulette color overlays to prevent orange/yellow tint */}
+
+                {/* Mobile swipe indicator - only show on first card when not rouletting */}
+                {i === 0 && !isRouletting && (
+                  <div className="md:hidden absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white/90 pointer-events-none border border-white/20 animate-bounce">
+                    Swipe →
+                  </div>
+                )}
+
+                {/* Shimmer for active card */}
+                {i === active && !isRouletting && (
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+                )}
               </div>
-
-              {/* Removed mobile roulette color overlays to prevent orange/yellow tint */}
-
-              {/* Mobile swipe indicator - only show on first card when not rouletting */}
-              {i === 0 && !isRouletting && (
-                <div className="md:hidden absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white/90 pointer-events-none border border-white/20 animate-bounce">
-                  Swipe →
-                </div>
-              )}
-
-              {/* Shimmer for active card */}
-              {i === active && !isRouletting && (
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-              )}
-            </div>
+            )}
           </div>
         ))}
 
