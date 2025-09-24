@@ -136,6 +136,11 @@ export default async function ActivityDetailPage({
               <AddToTripButton
                 tripRequestId={tripId}
                 activityId={activity.id}
+                activityName={activity.name}
+                activityImageUrl={activity.imageUrl}
+                destinationId={activity.destinationId}
+                price={typeof activity.price === 'string' ? parseFloat(activity.price) : activity.price}
+                currency={activity.currency}
                 className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
               />
             </div>
@@ -151,52 +156,50 @@ export default async function ActivityDetailPage({
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Pricing */}
+            {/* Activity Description */}
             <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/2 p-6">
-              <h3 className="mb-4 text-lg font-semibold text-white">Pricing</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-300">Price</span>
-                  <span className="font-medium text-white">
-                    {priceLabel(activity.price, activity.currency)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-300">Currency</span>
-                  <span className="font-medium text-white">
-                    {activity.currency || 'USD'}
-                  </span>
-                </div>
-                <div className="mt-4 rounded-lg bg-blue-500/10 p-3 text-xs text-blue-300">
-                  💡 Final pricing may vary based on group size and availability
+              <h3 className="mb-4 text-lg font-semibold text-white">Activity Description</h3>
+              <div className="space-y-4">
+                <p className="text-sm leading-relaxed text-zinc-300">
+                  {activity.description || "Immerse yourself in this unique experience that showcases the best of the local culture and attractions. This carefully curated activity offers an unforgettable journey through stunning landscapes and rich heritage."}
+                </p>
+                <div className="rounded-lg bg-amber-500/10 p-3">
+                  <div className="flex items-start gap-2">
+                    <span className="text-amber-400">⭐</span>
+                    <div>
+                      <h4 className="text-xs font-medium text-amber-300">Highlights</h4>
+                      <p className="mt-1 text-xs text-amber-200/80">
+                        Perfect for photography, cultural immersion, and creating lasting memories
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Details */}
+            {/* Activity Info */}
             <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/2 p-6">
-              <h3 className="mb-4 text-lg font-semibold text-white">Details</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-300">Location</span>
-                  <span className="font-medium text-white capitalize">
-                    {activity.destinationId.replace(/-/g, ' ')}
-                  </span>
+              <h3 className="mb-4 text-lg font-semibold text-white">Activity Info</h3>
+              <div className="space-y-4">
+                <div className="rounded-lg bg-white/5 p-4">
+                  <h4 className="mb-2 font-medium text-white">What's Included</h4>
+                  <ul className="space-y-1 text-sm text-zinc-300">
+                    <li>• Professional guide</li>
+                    <li>• All entrance fees</li>
+                    <li>• Transportation (if applicable)</li>
+                  </ul>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-300">Reviews</span>
-                  <span className="font-medium text-white">
-                    {activity.reviewCount || 0} reviews
-                  </span>
+                <div className="rounded-lg bg-white/5 p-4">
+                  <h4 className="mb-2 font-medium text-white">Duration</h4>
+                  <p className="text-sm text-zinc-300">
+                    Approximately 3-4 hours (varies by activity)
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-300">Added</span>
-                  <span className="font-medium text-white">
-                    {formatDate(activity.createdAt)}
-                  </span>
-                </div>
-                <div className="mt-4 rounded-lg bg-emerald-500/10 p-3 text-xs text-emerald-300">
-                  ✅ Currently available for booking
+                <div className="rounded-lg bg-white/5 p-4">
+                  <h4 className="mb-2 font-medium text-white">Meeting Point</h4>
+                  <p className="text-sm text-zinc-300">
+                    Details will be provided after booking confirmation
+                  </p>
                 </div>
               </div>
             </div>

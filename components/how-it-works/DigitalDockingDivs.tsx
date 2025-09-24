@@ -32,7 +32,7 @@ const DEFAULT_STEPS: Step[] = [
 export default function DigitalDockingDivs({
   steps = DEFAULT_STEPS,
   heading = "How It Works",
-  subtitle = "Four phases. The runway lights guide you forward.",
+  subtitle = "This is how we make travel easy for you.",
 }: DigitalDockingDivsProps) {
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -245,10 +245,10 @@ export default function DigitalDockingDivs({
           <div
             aria-hidden
             ref={planeRef}
-            className="pointer-events-none absolute top-10 left-6 flex w-12 -translate-x-1/2 justify-center md:top-10 md:left-1/2 md:w-16 lg:w-20"
+            className="pointer-events-none absolute top-10 left-6 hidden w-12 -translate-x-1/2 justify-center md:flex md:top-10 md:left-1/2 md:w-16 lg:w-20"
           >
             <Image
-              src="/images/how-it-works/plane.png"
+              src="/icons/plane.png"
               alt=""
               width={160}
               height={80}

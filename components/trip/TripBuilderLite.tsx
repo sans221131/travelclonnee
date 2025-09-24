@@ -3,7 +3,7 @@
 
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import SectionHeader from "@/components/sections/SectionHeader";
 
 // Pull the same curated choices you use in TripBuilderReceipt
@@ -75,6 +75,164 @@ const STEPS: StepId[] = [
   "summary",
 ];
 
+/* ---------------- Validation Patterns ---------------- */
+const VALIDATION_PATTERNS = {
+  email: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+  phoneCountryCode: /^\+[1-9]\d{0,2}$/,
+  phoneNumber: /^\d{6,15}$/,
+  name: /^[a-zA-Z\s\-'\.]+$/,
+} as const;
+
+const VALIDATION_LIMITS = {
+  email: { min: 5, max: 254 },
+  name: { min: 2, max: 50 },
+  phoneNumber: { min: 6, max: 15 },
+  phoneCountryCode: { min: 2, max: 4 },
+  adults: { min: 1, max: 20 },
+  children: { min: 0, max: 10 },
+  totalTravelers: 25,
+  tripDurationDays: 365,
+  futureYears: 2,
+} as const;
+
+/* ---------------- Geolocation Hook ---------------- */
+function useGeolocation() {
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLoading(false);
+      },
+      (error) => {
+        let errorMessage = "Unable to retrieve location";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied by user";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information unavailable";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out";
+            break;
+        }
+        setError(errorMessage);
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      }
+    );
+  };
+
+  return { location, loading, error, getCurrentLocation };
+}
+
+/* ---------------- Location Matching ---------------- */
+// Approximate coordinates for major cities (for demo purposes)
+const CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  "Mumbai, India": { lat: 19.0760, lon: 72.8777 },
+  "Delhi, India": { lat: 28.7041, lon: 77.1025 },
+  "Bangalore, India": { lat: 12.9716, lon: 77.5946 },
+  "Hyderabad, India": { lat: 17.3850, lon: 78.4867 },
+  "Chennai, India": { lat: 13.0827, lon: 80.2707 },
+  "Kolkata, India": { lat: 22.5726, lon: 88.3639 },
+  "Pune, India": { lat: 18.5204, lon: 73.8567 },
+  "Ahmedabad, India": { lat: 23.0225, lon: 72.5714 },
+  "Jaipur, India": { lat: 26.9124, lon: 75.7873 },
+  "Lucknow, India": { lat: 26.8467, lon: 80.9462 },
+  "Kanpur, India": { lat: 26.4499, lon: 80.3319 },
+  "Nagpur, India": { lat: 21.1458, lon: 79.0882 },
+  "Indore, India": { lat: 22.7196, lon: 75.8577 },
+  "Thane, India": { lat: 19.2183, lon: 72.9781 },
+  "Bhopal, India": { lat: 23.2599, lon: 77.4126 },
+  "Visakhapatnam, India": { lat: 17.6868, lon: 83.2185 },
+  "Pimpri-Chinchwad, India": { lat: 18.6298, lon: 73.7997 },
+  "Patna, India": { lat: 25.5941, lon: 85.1376 },
+  "Vadodara, India": { lat: 22.3072, lon: 73.1812 },
+  "Ghaziabad, India": { lat: 28.6692, lon: 77.4538 },
+  "Ludhiana, India": { lat: 30.9010, lon: 75.8573 },
+  "Agra, India": { lat: 27.1767, lon: 78.0081 },
+  "Nashik, India": { lat: 19.9975, lon: 73.7898 },
+  "Faridabad, India": { lat: 28.4089, lon: 77.3178 },
+  "Meerut, India": { lat: 28.9845, lon: 77.7064 },
+  "Rajkot, India": { lat: 22.3039, lon: 70.8022 },
+  "Kalyan-Dombivali, India": { lat: 19.2403, lon: 73.1305 },
+  "Vasai-Virar, India": { lat: 19.4912, lon: 72.8054 },
+  "Varanasi, India": { lat: 25.3176, lon: 82.9739 },
+  "Srinagar, India": { lat: 34.0837, lon: 74.7973 },
+  "New York, USA": { lat: 40.7128, lon: -74.0060 },
+  "London, UK": { lat: 51.5074, lon: -0.1278 },
+  "Dubai, UAE": { lat: 25.2048, lon: 55.2708 },
+  "Singapore, Singapore": { lat: 1.3521, lon: 103.8198 },
+  "Tokyo, Japan": { lat: 35.6762, lon: 139.6503 },
+  "Bangkok, Thailand": { lat: 13.7563, lon: 100.5018 },
+  "Bali, Indonesia": { lat: -8.3405, lon: 115.0920 },
+  "Istanbul, Turkey": { lat: 41.0082, lon: 28.9784 },
+  "Maldives, Maldives": { lat: 3.2028, lon: 73.2207 },
+  "Phuket, Thailand": { lat: 7.8804, lon: 98.3923 },
+  "Doha, Qatar": { lat: 25.2760, lon: 51.5200 },
+  "Paris, France": { lat: 48.8566, lon: 2.3522 },
+  "Switzerland": { lat: 46.8182, lon: 8.2275 },
+  "Rajasthan, India": { lat: 27.0238, lon: 74.2179 },
+  "Kerala, India": { lat: 10.8505, lon: 76.2711 },
+  "Ladakh, India": { lat: 34.1526, lon: 77.5771 },
+  "Himachal Pradesh, India": { lat: 31.1048, lon: 77.1734 },
+};
+
+// Calculate distance between two coordinates using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Find closest city from available options
+function findClosestCity(userLat: number, userLon: number, availableCities: ReadonlyArray<string>): string | null {
+  let closestCity = null;
+  let minDistance = Infinity;
+
+  for (const city of availableCities) {
+    const coords = CITY_COORDINATES[city];
+    if (coords) {
+      const distance = calculateDistance(userLat, userLon, coords.lat, coords.lon);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCity = city;
+      }
+    }
+  }
+
+  // Only return if within reasonable distance (500km)
+  return minDistance <= 500 ? closestCity : null;
+}
+
 /* ---------------- Helpers ---------------- */
 function fmtDate(iso?: string) {
   if (!iso) return "";
@@ -128,16 +286,28 @@ function destinationSlugFromLabel(label?: string) {
 /* ---------------- Component ---------------- */
 export default function TripBuilderLite() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [idx, setIdx] = useState(0);
   const [maxVisited, setMaxVisited] = useState(0); // allow pip jump back, not forward
   const [answers, setAnswers] = useState<Answers>({
     adults: 1,
     children: 0,
-    // seededDestination: "Dubai, UAE",
     seedPromptShown: false,
     phoneCountryCode: "+91",
   });
+
+  // Handle carousel destination selection from URL parameters
+  useEffect(() => {
+    const selectedDestination = searchParams.get('destination');
+    if (selectedDestination && DESTINATIONS.includes(selectedDestination as any)) {
+      setAnswers(prev => ({
+        ...prev,
+        seededDestination: selectedDestination,
+        seedPromptShown: false,
+      }));
+    }
+  }, [searchParams]);
 
   // Determine current step, but skip destinationSeed if nothing is seeded
   const steps = useMemo(() => {
@@ -153,6 +323,30 @@ export default function TripBuilderLite() {
   const [submitting, setSubmitting] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
+
+  // Geolocation hook
+  const { location, loading: locationLoading, error: locationError, getCurrentLocation } = useGeolocation();
+
+  // Auto-fill origin when location is detected
+  useEffect(() => {
+    if (location && !answers.from) {
+      const closestCity = findClosestCity(location.latitude, location.longitude, ORIGIN_CITIES);
+      if (closestCity) {
+        setAnswers((a) => ({ ...a, from: closestCity }));
+      }
+    }
+  }, [location, answers.from]);
+
+  // Attempt automatic location detection on first visit to fromLocation step
+  useEffect(() => {
+    if (current === "fromLocation" && !answers.from && !location && !locationLoading && !locationError) {
+      // Small delay to avoid immediate popup on page load
+      const timer = setTimeout(() => {
+        getCurrentLocation();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [current, answers.from, location, locationLoading, locationError, getCurrentLocation]);
 
   const hasAll = useMemo(() => {
     return Boolean(
@@ -207,22 +401,50 @@ export default function TripBuilderLite() {
       case "destinationSelect":
         return !!answers.destination;
       case "dates":
+        if (!answers.startDate || !answers.endDate) return false;
+        const today = new Date().toISOString().split('T')[0];
+        const maxDate = new Date();
+        maxDate.setFullYear(maxDate.getFullYear() + 2); // Max 2 years in future
+        const maxDateStr = maxDate.toISOString().split('T')[0];
+        const tripDuration = (new Date(answers.endDate).getTime() - new Date(answers.startDate).getTime()) / (1000 * 60 * 60 * 24);
+        
         return Boolean(
-          answers.startDate &&
-            answers.endDate &&
-            answers.startDate <= answers.endDate
+          answers.startDate >= today && // Not in the past
+          answers.endDate >= answers.startDate && // End after start
+          answers.startDate <= maxDateStr && // Within 2 years
+          answers.endDate <= maxDateStr && // Within 2 years
+          tripDuration <= 365 // Max 1 year trip duration
         );
       case "travellers":
-        return (answers.adults ?? 0) >= 1 && (answers.children ?? 0) >= 0;
+        const adults = answers.adults ?? 0;
+        const children = answers.children ?? 0;
+        // Reasonable limits: 1-20 adults, 0-10 children, max 25 total
+        return adults >= 1 && 
+               adults <= 20 && 
+               children >= 0 && 
+               children <= 10 && 
+               (adults + children) <= 25;
       case "passengerName":
-        return Boolean(answers.passengerName?.trim());
+        const name = (answers.passengerName || "").trim();
+        // Name: 2-50 characters, letters, spaces, hyphens, apostrophes only
+        return name.length >= 2 && 
+               name.length <= 50 &&
+               /^[a-zA-Z\s\-'\.]+$/.test(name) &&
+               !/^\s|\s$/.test(name);
       case "phoneNumber":
+        const countryCode = (answers.phoneCountryCode || "").trim();
+        const phoneNumber = (answers.phoneNumber || "").replace(/\s+/g, "");
+        // Country code: +1 to +999, Phone: 6-15 digits
         return Boolean(
-          (answers.phoneCountryCode || "").trim().length >= 1 &&
-            (answers.phoneNumber || "").replace(/\s+/g, "").length >= 6
+          /^\+[1-9]\d{0,2}$/.test(countryCode) &&
+          /^\d{6,15}$/.test(phoneNumber)
         );
       case "email":
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers.email || "");
+        const email = (answers.email || "").trim();
+        // RFC 5322 compliant email with length limits (5-254 chars)
+        return email.length >= 5 && 
+               email.length <= 254 &&
+               /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
       case "nationality":
         return !!answers.nationality;
       case "airline":
@@ -461,6 +683,8 @@ export default function TripBuilderLite() {
                       title="Where are you traveling from?"
                       subtitle="Major cities with airports"
                     >
+
+
                       {/* Mobile: dropdown select */}
                       <div className="sm:hidden">
                         <Labeled field="origin" label="Origin">
@@ -568,13 +792,26 @@ export default function TripBuilderLite() {
                             id="start-date"
                             type="date"
                             value={answers.startDate ?? ""}
-                            max={answers.endDate || undefined}
+                            min={new Date().toISOString().split('T')[0]}
+                            max={(() => {
+                              const maxDate = new Date();
+                              maxDate.setFullYear(maxDate.getFullYear() + 2);
+                              return Math.min(
+                                new Date(maxDate).getTime(), 
+                                answers.endDate ? new Date(answers.endDate).getTime() : Infinity
+                              ) === new Date(maxDate).getTime() ? 
+                                maxDate.toISOString().split('T')[0] :
+                                answers.endDate || maxDate.toISOString().split('T')[0];
+                            })()}
                             onChange={(e) => {
                               const newStartDate = e.target.value;
-                              setAnswers((a) => ({
-                                ...a,
-                                startDate: newStartDate,
-                              }));
+                              const today = new Date().toISOString().split('T')[0];
+                              if (newStartDate >= today) {
+                                setAnswers((a) => ({
+                                  ...a,
+                                  startDate: newStartDate,
+                                }));
+                              }
                             }}
                             className="input"
                           />
@@ -584,13 +821,35 @@ export default function TripBuilderLite() {
                             id="end-date"
                             type="date"
                             value={answers.endDate ?? ""}
-                            min={answers.startDate || undefined}
+                            min={answers.startDate || new Date().toISOString().split('T')[0]}
+                            max={(() => {
+                              const maxDate = new Date();
+                              maxDate.setFullYear(maxDate.getFullYear() + 2);
+                              const maxTripDate = answers.startDate ? 
+                                new Date(new Date(answers.startDate).getTime() + 365 * 24 * 60 * 60 * 1000) :
+                                maxDate;
+                              return Math.min(maxDate.getTime(), maxTripDate.getTime()) === maxDate.getTime() ?
+                                maxDate.toISOString().split('T')[0] :
+                                maxTripDate.toISOString().split('T')[0];
+                            })()}
                             onChange={(e) => {
                               const newEndDate = e.target.value;
-                              setAnswers((a) => ({
-                                ...a,
-                                endDate: newEndDate,
-                              }));
+                              const startDate = answers.startDate;
+                              if (startDate && newEndDate >= startDate) {
+                                // Check max trip duration (365 days)
+                                const tripDuration = (new Date(newEndDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24);
+                                if (tripDuration <= 365) {
+                                  setAnswers((a) => ({
+                                    ...a,
+                                    endDate: newEndDate,
+                                  }));
+                                }
+                              } else if (!startDate) {
+                                setAnswers((a) => ({
+                                  ...a,
+                                  endDate: newEndDate,
+                                }));
+                              }
                             }}
                             className="input"
                           />
@@ -609,9 +868,14 @@ export default function TripBuilderLite() {
                           <NumberField
                             id="adults"
                             min={1}
+                            max={20}
                             value={answers.adults ?? 1}
                             onChange={(n) => {
-                              setAnswers((a) => ({ ...a, adults: n }));
+                              // Ensure total travelers don't exceed 25
+                              const children = answers.children ?? 0;
+                              if (n + children <= 25) {
+                                setAnswers((a) => ({ ...a, adults: n }));
+                              }
                             }}
                           />
                         </Labeled>
@@ -619,9 +883,14 @@ export default function TripBuilderLite() {
                           <NumberField
                             id="children"
                             min={0}
+                            max={10}
                             value={answers.children ?? 0}
                             onChange={(n) => {
-                              setAnswers((a) => ({ ...a, children: n }));
+                              // Ensure total travelers don't exceed 25
+                              const adults = answers.adults ?? 1;
+                              if (adults + n <= 25) {
+                                setAnswers((a) => ({ ...a, children: n }));
+                              }
                             }}
                           />
                         </Labeled>
@@ -630,21 +899,27 @@ export default function TripBuilderLite() {
                   )}
 
                   {current === "passengerName" && (
-                    <StepShell title="What's the passenger name?">
+                    <StepShell title="What's your name?">
                       <Labeled field="pname" label="">
                         <input
                           id="pname"
                           type="text"
-                          placeholder="Type your name"
+                          placeholder="Enter your full name"
                           inputMode="text"
                           autoComplete="name"
+                          maxLength={50}
+                          minLength={2}
+                          pattern="[a-zA-Z\s\-'\.]{2,50}"
                           value={answers.passengerName ?? ""}
                           onChange={(e) => {
                             const newName = e.target.value;
-                            setAnswers((a) => ({
-                              ...a,
-                              passengerName: newName,
-                            }));
+                            // Allow only letters, spaces, hyphens, apostrophes, periods
+                            if (/^[a-zA-Z\s\-'\.]*$/.test(newName)) {
+                              setAnswers((a) => ({
+                                ...a,
+                                passengerName: newName,
+                              }));
+                            }
                           }}
                           className="input"
                         />
@@ -661,13 +936,18 @@ export default function TripBuilderLite() {
                             type="tel"
                             placeholder="+91"
                             inputMode="tel"
+                            maxLength={4}
+                            pattern="\+[1-9]\d{0,2}"
                             value={answers.phoneCountryCode ?? ""}
                             onChange={(e) => {
                               const newCode = e.target.value;
-                              setAnswers((a) => ({
-                                ...a,
-                                phoneCountryCode: newCode,
-                              }));
+                              // Allow only +1 to +999 format
+                              if (/^\+?[1-9]?\d{0,2}$/.test(newCode) || newCode === "+") {
+                                setAnswers((a) => ({
+                                  ...a,
+                                  phoneCountryCode: newCode.startsWith('+') ? newCode : '+' + newCode.replace(/^\+/, ''),
+                                }));
+                              }
                             }}
                             className="input"
                           />
@@ -679,13 +959,21 @@ export default function TripBuilderLite() {
                             placeholder="98765 43210"
                             inputMode="tel"
                             autoComplete="tel"
+                            maxLength={20}
+                            pattern="\d{6,15}"
                             value={answers.phoneNumber ?? ""}
                             onChange={(e) => {
                               const newNumber = e.target.value;
-                              setAnswers((a) => ({
-                                ...a,
-                                phoneNumber: newNumber,
-                              }));
+                              // Allow only digits and spaces, max 15 digits
+                              const digitsOnly = newNumber.replace(/\D/g, '');
+                              if (digitsOnly.length <= 15) {
+                                // Format with spaces for readability
+                                const formatted = digitsOnly.replace(/(\d{5})(\d+)/, '$1 $2');
+                                setAnswers((a) => ({
+                                  ...a,
+                                  phoneNumber: formatted,
+                                }));
+                              }
                             }}
                             className="input"
                           />
@@ -703,13 +991,19 @@ export default function TripBuilderLite() {
                           placeholder="you@example.com"
                           inputMode="email"
                           autoComplete="email"
+                          maxLength={254}
+                          minLength={5}
+                          pattern="[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*"
                           value={answers.email ?? ""}
                           onChange={(e) => {
-                            const newEmail = e.target.value;
-                            setAnswers((a) => ({
-                              ...a,
-                              email: newEmail,
-                            }));
+                            const newEmail = e.target.value.toLowerCase().trim();
+                            // Basic email format check during typing
+                            if (newEmail.length <= 254) {
+                              setAnswers((a) => ({
+                                ...a,
+                                email: newEmail,
+                              }));
+                            }
                           }}
                           className="input"
                         />
@@ -750,7 +1044,7 @@ export default function TripBuilderLite() {
                   {current === "flightClass" && (
                     <StepShell title="Flight class preference?">
                       <ChoiceGrid
-                        options={[...FLIGHT_CLASSES, "Premium Economy"]}
+                        options={["Economy", "Premium Economy", "Business", "First"]}
                         value={answers.flightClass}
                         onChange={(v) => setAnswer("flightClass", v)}
                       />
@@ -1045,11 +1339,13 @@ function Labeled({
 function NumberField({
   id,
   min = 0,
+  max = 25,
   value,
   onChange,
 }: {
   id: string;
   min?: number;
+  max?: number;
   value: number;
   onChange: (n: number) => void;
 }) {
@@ -1058,6 +1354,7 @@ function NumberField({
       <button
         type="button"
         className="btn-secondary px-2.5 py-2 min-w-[40px] min-h-[40px] touch-manipulation sm:px-3"
+        disabled={value <= min}
         onClick={() => onChange(Math.max(min, (value || 0) - 1))}
       >
         −
@@ -1066,16 +1363,23 @@ function NumberField({
         id={id}
         type="number"
         min={min}
+        max={max}
         value={value}
         inputMode="numeric"
-        onChange={(e) => onChange(Number(e.target.value || 0))}
-        className="input text-center min-h-[40px]"
+        onChange={(e) => {
+          const newValue = Number(e.target.value || 0);
+          if (newValue >= min && newValue <= max) {
+            onChange(newValue);
+          }
+        }}
+        className="input text-center min-h-[40px] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         style={{ MozAppearance: "textfield" as any }}
       />
       <button
         type="button"
         className="btn-secondary px-2.5 py-2 min-w-[40px] min-h-[40px] touch-manipulation sm:px-3"
-        onClick={() => onChange((value || 0) + 1)}
+        disabled={value >= max}
+        onClick={() => onChange(Math.min(max, (value || 0) + 1))}
       >
         +
       </button>

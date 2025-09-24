@@ -14,15 +14,35 @@ import {
 } from "../../../../lib/db";
 
 /* ---------------- utils ---------------- */
-function fmtDate(d: string) {
+function fmtDate(d: string | Date | null | undefined) {
+  if (!d) return "Unknown date";
+  
   try {
-    return new Date(d + "T00:00:00").toLocaleDateString("en-IN", {
+    let date: Date;
+    if (d instanceof Date) {
+      date = d;
+    } else if (typeof d === 'string') {
+      // If it's already in YYYY-MM-DD format, add time
+      if (d.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        date = new Date(d + "T00:00:00");
+      } else {
+        date = new Date(d);
+      }
+    } else {
+      date = new Date(d);
+    }
+    
+    if (isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+    
+    return date.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   } catch {
-    return d;
+    return "Invalid date";
   }
 }
 
@@ -142,13 +162,10 @@ export default async function ReceiptPage(props: {
             />
 
             {/* header strip */}
-            <div className="mb-5 flex items-center justify-between gap-3">
+            <div className="mb-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/90" />
                 Trip summary
-              </div>
-              <div className="text-xs text-zinc-400">
-                Created {fmtDate(tr.createdAt?.toString?.().slice(0, 10) ?? "")}
               </div>
             </div>
 
@@ -192,10 +209,7 @@ export default async function ReceiptPage(props: {
                     {tr.adults} adult{tr.adults === 1 ? "" : "s"}
                     {tr.kids
                       ? `, ${tr.kids} child${tr.kids === 1 ? "" : "ren"}`
-                      : ""}{" "}
-                    <span className="text-zinc-400">
-                      ({totalPax((tr.adults ?? 0) + (tr.kids ?? 0))})
-                    </span>
+                      : ""}
                   </div>
                   {tr.passengerName ? (
                     <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white">
@@ -302,6 +316,11 @@ export default async function ReceiptPage(props: {
                         <AddToTripButton
                           tripRequestId={tr.id}
                           activityId={a.id}
+                          activityName={a.name}
+                          activityImageUrl={a.imageUrl}
+                          destinationId={a.destinationId}
+                          price={typeof a.price === 'string' ? parseFloat(a.price) : a.price}
+                          currency={a.currency}
                         />
                       </div>
                     </div>

@@ -1,13 +1,22 @@
 // lib/trip-builder/guardrails.ts
 export const DESTINATIONS = [
   "Dubai, UAE",
-  "Singapore, Singapore",
+  "Singapore, Singapore", 
   "Bangkok, Thailand",
   "Bali, Indonesia",
   "Istanbul, Turkey",
   "Maldives, Maldives",
   "Phuket, Thailand",
   "Doha, Qatar",
+  "Paris, France",
+  "London, UK",
+  "Tokyo, Japan",
+  "New York, USA",
+  "Switzerland",
+  "Rajasthan, India",
+  "Kerala, India",
+  "Ladakh, India",
+  "Himachal Pradesh, India",
 ] as const;
 
 export const ORIGIN_CITIES = [
@@ -80,6 +89,15 @@ const FACTS: Record<string, string> = {
     "Tropical paradise with stunning beaches and vibrant nightlife.",
   "Doha, Qatar":
     "Modern architecture meets traditional culture in the heart of the Middle East.",
+  "Paris, France": "The city of lights, romance, and world-class cuisine.",
+  "London, UK": "Royal heritage meets modern culture in this iconic city.",
+  "Tokyo, Japan": "Where ancient traditions blend seamlessly with cutting-edge technology.",
+  "New York, USA": "The city that never sleeps, full of endless possibilities.",
+  "Switzerland": "Alpine beauty, pristine lakes, and charming mountain villages.",
+  "Rajasthan, India": "Land of kings, majestic palaces, and desert adventures.",
+  "Kerala, India": "God's own country with backwaters, spices, and lush greenery.",
+  "Ladakh, India": "High-altitude desert with breathtaking landscapes and Buddhist culture.",
+  "Himachal Pradesh, India": "Hill stations, snow-capped peaks, and serene valleys.",
 };
 
 export function niceFact(dest?: string) {

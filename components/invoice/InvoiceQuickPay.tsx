@@ -232,20 +232,20 @@ export default function InvoiceQuickPay() {
         className="pointer-events-none absolute inset-0 [background:radial-gradient(900px_380px_at_50%_-10%,rgba(255,255,255,.07)_0%,transparent_60%)]"
       />
 
-      <div className="relative mx-auto max-w-5xl px-3 sm:px-4 md:px-8 py-10 sm:py-14 md:py-20">
+      <div className="relative mx-auto max-w-5xl px-2 sm:px-4 md:px-8 py-4 sm:py-14 md:py-20">
         <StepperDark step={step} />
 
-        <div className="text-center px-1">
+        <div className="text-center px-1 mb-3 sm:mb-0">
           <SectionHeader
             title="Have an Invoice?"
-            subtitle="Paste or type your reference to review details and continue to payment."
+            subtitle="Enter your reference to review and continue to payment."
             align="center"
             tone="light"
           />
         </div>
 
         {/* GLOW: wider linear glow behind the card */}
-        <div className="relative mt-6 sm:mt-8">
+        <div className="relative mt-3 sm:mt-8">
           <div className="absolute inset-x-0 -top-6 sm:-top-8 -z-10 h-24 sm:h-32">
             <div className="glowbar mx-auto h-full w-[130%] sm:w-[135%]" />
           </div>
@@ -253,31 +253,23 @@ export default function InvoiceQuickPay() {
           {/* Dark ticket card */}
           <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))] backdrop-blur-md shadow-[0_30px_110px_-30px_rgba(0,0,0,.8)]">
             <div className="grid grid-cols-1 md:grid-cols-[112px_1fr]">
-              {/* Stub: top on mobile, left on md+ */}
-              <aside className="relative rounded-t-2xl md:rounded-t-none md:rounded-l-3xl bg-[radial-gradient(120px_60px_at_30%_25%,rgba(255,255,255,.08),transparent_60%),radial-gradient(140px_70px_at_70%_75%,rgba(255,255,255,.08),transparent_60%)] p-4">
-                {/* Mobile: REF above barcode, with padding. Desktop: original layout. */}
-                <div className="flex flex-col gap-3 md:block">
+              {/* Stub: hidden on mobile, left on md+ */}
+              <aside className="hidden md:block relative md:rounded-l-3xl bg-[radial-gradient(120px_60px_at_30%_25%,rgba(255,255,255,.08),transparent_60%),radial-gradient(140px_70px_at_70%_75%,rgba(255,255,255,.08),transparent_60%)] p-4">
+                {/* Desktop layout only */}
+                <div>
                   {/* REF + value */}
-                  <div className="pb-1 md:pb-0">
+                  <div>
                     <div className="text-[10px] font-semibold tracking-[0.2em] text-zinc-400">
                       REF
                     </div>
-                    <div className="mt-1 md:mt-2 text-xs text-zinc-200 break-all">
+                    <div className="mt-2 text-xs text-zinc-200 break-all">
                       {invoice?.id || refInput || "INV-XXXXX"}
                     </div>
                   </div>
 
-                  {/* Barcode: rotate 90° and widen on mobile; normal on desktop */}
+                  {/* Barcode: desktop only */}
                   <div
-                    className={[
-                      "overflow-hidden rounded bg-zinc-900/60 flex flex-col",
-                      "px-1.5 py-2",
-                      "h-70 w-24",           // mobile: smaller height, wider width
-                      "md:h-28 md:w-12",     // desktop original (unchanged)
-                      "origin-center rotate-90 md:rotate-0",
-                      "self-center md:self-auto",
-                      "scale-[1.05] md:scale-100",
-                    ].join(" ")}
+                    className="mt-4 overflow-hidden rounded bg-zinc-900/60 flex flex-col px-1.5 py-2 h-28 w-12"
                     aria-label="barcode"
                   >
                     {barcodeBars.map((b, i) =>
@@ -305,19 +297,18 @@ export default function InvoiceQuickPay() {
                   </div>
                 </div>
 
-                {/* perforation: horizontal on mobile, vertical on md+ */}
-                <div className="md:hidden absolute left-3 right-3 bottom-0 h-px bg-zinc-400/40 [mask:repeating-linear-gradient(90deg,#000_0_8px,transparent_8px_16px)]" />
-                <div className="hidden md:block absolute right-0 top-3 bottom-3 w-px bg-zinc-400/40 [mask:repeating-linear-gradient(0deg,#000_0_8px,transparent_8px_16px)]" />
+                {/* perforation: vertical on desktop only */}
+                <div className="absolute right-0 top-3 bottom-3 w-px bg-zinc-400/40 [mask:repeating-linear-gradient(0deg,#000_0_8px,transparent_8px_16px)]" />
               </aside>
 
               {/* Content */}
-              <div className="p-4 sm:p-6 md:p-7">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+              <div className="p-3 sm:p-6 md:p-7">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                   <div>
                     <div className="text-[10px] font-semibold tracking-[0.18em] text-zinc-400">
                       INVOICE
                     </div>
-                    <div className="mt-1 sm:mt-2 flex flex-wrap items-center gap-2 sm:gap-3 text-[13px] sm:text-sm text-zinc-300">
+                    <div className="mt-1 sm:mt-2 flex flex-wrap items-center gap-1.5 sm:gap-3 text-[13px] sm:text-sm text-zinc-300">
                       <Meta label="Date" value={invoice ? fmtDate(invoice.dateISO) : "— —"} />
                       <span className="hidden sm:inline h-3 w-px bg-white/10" />
                       <Meta label="Bill to" value={invoice?.billTo || "— —"} />
@@ -326,22 +317,22 @@ export default function InvoiceQuickPay() {
 
                   <div className="text-left sm:text-right">
                     <div className="text-[11px] text-zinc-400">Amount</div>
-                    <div className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-white">
+                    <div className="mt-1 text-lg sm:text-2xl font-semibold tracking-tight text-white">
                       {invoice ? money(invoice.amount, invoice.currency) : "— —"}
                     </div>
-                    <div className="mt-2 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-zinc-300">
+                    <div className="mt-1 sm:mt-2 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-zinc-300">
                       {invoice?.status ? capitalize(invoice.status) : "Preview"}
                     </div>
                   </div>
                 </div>
 
-                <div className="my-4 sm:my-5 h-px bg-zinc-500/50 [mask:repeating-linear-gradient(90deg,#000_0_10px,transparent_10px_18px)]" />
+                <div className="my-3 sm:my-5 h-px bg-zinc-500/50 [mask:repeating-linear-gradient(90deg,#000_0_10px,transparent_10px_18px)]" />
 
                 {/* Reference input row */}
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
-                  <div className="inline-flex items-center gap-2 text-[12px] sm:text-sm text-zinc-400">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+                  <div className="inline-flex items-center gap-2 text-[11px] sm:text-sm text-zinc-400">
                     Pay using reference
-                    <span className="rounded-md bg-white/5 px-1.5 py-0.5 font-mono text-[11px] sm:text-[12px] text-zinc-200">
+                    <span className="rounded-md bg-white/5 px-1.5 py-0.5 font-mono text-[10px] sm:text-[12px] text-zinc-200">
                       {invoice?.id || refInput || "INV-XXXXX"}
                     </span>
                   </div>
@@ -352,7 +343,7 @@ export default function InvoiceQuickPay() {
                     <label htmlFor="invref" className="sr-only">
                       Invoice reference
                     </label>
-                    <div className="relative w-full md:w-80">
+                    <div className="relative flex-1 md:flex-none md:w-80">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-zinc-300">
                         INV
                       </span>
@@ -362,10 +353,11 @@ export default function InvoiceQuickPay() {
                         inputMode="text"
                         autoComplete="off"
                         spellCheck={false}
+                        maxLength={15}
                         value={refInput}
                         onChange={(e) => onChangeRef(e.target.value)}
                         placeholder="INV-AX7Q9K"
-                        className="h-12 sm:h-11 w-full rounded-full border border-white/10 bg-zinc-900/70 pl-14 pr-4 text-[13px] sm:text-sm tracking-wider text-white placeholder:text-zinc-500 outline-none focus:border-white/30"
+                        className="h-10 sm:h-11 w-full rounded-full border border-white/10 bg-zinc-900/70 pl-14 pr-4 text-[13px] sm:text-sm tracking-wider text-white placeholder:text-zinc-500 outline-none focus:border-white/30"
                         aria-describedby="refHelp"
                       />
                     </div>
@@ -374,14 +366,14 @@ export default function InvoiceQuickPay() {
                       type="button"
                       onClick={openDrawer}
                       disabled={!invoice || status !== "found"}
-                      className="h-12 sm:h-11 w-28 md:w-auto whitespace-nowrap rounded-full bg-white/90 px-4 text-sm font-medium text-zinc-950 shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-30"
+                      className="h-10 sm:h-11 px-3 sm:px-4 md:w-auto whitespace-nowrap rounded-full bg-white/90 text-sm font-medium text-zinc-950 shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       Review →
                     </button>
                   </div>
                 </div>
 
-                <p id="refHelp" className="mt-2 text-[11px] text-zinc-500">
+                <p id="refHelp" className="mt-1 text-[10px] sm:text-[11px] text-zinc-500">
                   Tip: paste your reference anywhere. I’ll catch it.
                 </p>
               </div>

@@ -1,7 +1,20 @@
 // components/header/SiteHeader.tsx
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 export default function SiteHeader() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -23,63 +36,114 @@ export default function SiteHeader() {
             </Link>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-10">
-            <a
+          <div className="flex-1"></div>
+
+          <nav className="hidden lg:flex items-center gap-8">
+            <Link
               href="#destinations"
               className="text-base text-white/90 hover:text-white transition-opacity"
             >
-              Solutions
-            </a>
-            <a
+              Destinations
+            </Link>
+            <Link
               href="#trip-builder"
               className="text-base text-white/90 hover:text-white transition-opacity"
             >
               Trip Builder
-            </a>
-            <a
+            </Link>
+            <Link
               href="#how-it-works"
               className="text-base text-white/90 hover:text-white transition-opacity"
             >
               How It Works
-            </a>
-            <a
-              href="#proof"
+            </Link>
+            <Link
+              href="#invoice-quick-pay"
               className="text-base text-white/90 hover:text-white transition-opacity"
             >
-              Proof
-            </a>
-          </nav>
-
-          <div className="sm:ml-auto lg:flex items-center gap-6">
-            <a
-              href="#invoice"
-              className="hidden lg:inline text-base text-white/90 hover:text-white transition-opacity"
-            >
               Pay Invoice
-            </a>
-          </div>
+            </Link>
+          </nav>
 
           <button
             type="button"
-            aria-label="Open menu"
-            className="inline-flex p-2 ml-1 text-white rounded-md sm:ml-4 lg:hidden hover:bg-white/10 focus:bg-white/10"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            onClick={toggleMenu}
+            className="inline-flex p-2 ml-1 text-white rounded-md sm:ml-4 lg:hidden hover:bg-white/10 focus:bg-white/10 transition-colors"
           >
-            <svg
-              className="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
+            {isMenuOpen ? (
+              <svg
+                className="h-6 w-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 6l12 12M6 18L18 6"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="h-6 w-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16m-7 6h7"
+                />
+              </svg>
+            )}
           </button>
         </div>
+
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="rounded-b-xl bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-black/90 ring-1 ring-white/10 px-3 sm:px-4 py-4">
+                <nav className="flex flex-col space-y-4">
+                  <Link
+                    href="#destinations"
+                    onClick={closeMenu}
+                    className="text-base text-white/90 hover:text-white transition-colors py-2"
+                  >
+                    Solutions
+                  </Link>
+                  <Link
+                    href="#trip-builder"
+                    onClick={closeMenu}
+                    className="text-base text-white/90 hover:text-white transition-colors py-2"
+                  >
+                    Trip Builder
+                  </Link>
+                  <Link
+                    href="#how-it-works"
+                    onClick={closeMenu}
+                    className="text-base text-white/90 hover:text-white transition-colors py-2"
+                  >
+                    How It Works
+                  </Link>
+                  <Link
+                    href="#invoice-quick-pay"
+                    onClick={closeMenu}
+                    className="text-base text-white/90 hover:text-white transition-colors py-2 border-t border-white/10 pt-4"
+                  >
+                    Pay Invoice
+                  </Link>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -3,8 +3,7 @@
 
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import SectionHeader from "@/components/sections/SectionHeader";
-import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { useRouter } from "next/navigation";
 
 type Place = {
   id: string;
@@ -24,21 +23,41 @@ type CarouselProps = {
   respectReducedMotion?: boolean;
 };
 
+// Mapping between carousel item IDs and destination names for trip builder
+const CAROUSEL_TO_DESTINATION_MAP: Record<string, string> = {
+  "dubai": "Dubai, UAE",
+  "thailand": "Bangkok, Thailand", // Using Bangkok as primary Thai destination
+  "london": "London, UK",
+  "united-states": "New York, USA", // Using NYC as primary US destination
+  "bali": "Bali, Indonesia",
+  "switzerland": "Switzerland",
+  "paris": "Paris, France",
+  "bhutan": "Phuket, Thailand", // Mapping Bhutan to nearest available destination
+  "maldives": "Maldives, Maldives",
+  "kerala": "Kerala, India",
+  "assam": "Kerala, India", // Mapping Assam to Kerala (closest available)
+  "himachal": "Himachal Pradesh, India",
+  "meghalaya": "Himachal Pradesh, India", // Mapping to closest available
+  "mysore": "Kerala, India", // Mapping to Kerala (closest South Indian destination)
+  "rajasthan": "Rajasthan, India",
+  "uttarakhand": "Himachal Pradesh, India", // Mapping to closest mountain destination
+  "ladakh": "Ladakh, India",
+};
+
 export default function Carousel({
   id = "destinations",
-  title = "Choose Your Destination",
+  title = "Top Picks",
   items,
   darkOverlay = 0.25,
   overshootPx = 120,
   whipMs = 720,
   respectReducedMotion = true,
 }: CarouselProps) {
+  const router = useRouter();
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
   const centersRef = useRef<number[]>([]);
   const [active, setActive] = useState(0);
-  // Decouple pills from carousel card selection to avoid shared animation
-  const [pillActive, setPillActive] = useState(0);
   const [gutters, setGutters] = useState({ left: 0, right: 0 });
   const [dramatic, setDramatic] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -66,6 +85,7 @@ export default function Carousel({
   const measureAll = () => {
     const root = scrollerRef.current;
     if (!root) return;
+
     const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
     if (!cards.length) return;
 
@@ -83,7 +103,7 @@ export default function Carousel({
       centersRef.current = c;
     });
 
-    // measure pills height if (wraps on desktop; changes on resize)
+    // measure pills height
     if (pillsRef.current) setPillsH(pillsRef.current.offsetHeight);
   };
 
@@ -91,11 +111,10 @@ export default function Carousel({
     measureAll();
     const root = scrollerRef.current;
     if (!root) return;
-
     const ro = new ResizeObserver(measureAll);
     ro.observe(root);
 
-    // observe pills height
+    // observe pills height (wraps on desktop; changes on resize)
     let roPills: ResizeObserver | null = null;
     if (pillsRef.current) {
       roPills = new ResizeObserver(() => {
@@ -107,12 +126,10 @@ export default function Carousel({
     return () => {
       ro.disconnect();
       if (roPills) roPills.disconnect();
-
       // cleanup any pending roulette timeouts on unmount
       timeoutsRef.current.forEach((id) => clearTimeout(id));
       timeoutsRef.current = [];
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length]);
 
   /* ---------- Scroll brain (no per-frame rect reads) ---------- */
@@ -121,25 +138,29 @@ export default function Carousel({
     if (!root) return;
 
     let ticking = false;
+
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
 
       requestAnimationFrame(() => {
         ticking = false;
+
         const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
         if (!cards.length) return;
+
         const centers = centersRef.current;
         if (!centers.length) return;
 
         const viewCenter = root.scrollLeft + root.clientWidth / 2;
+
         let bestIdx = active;
         let bestDelta = Number.POSITIVE_INFINITY;
 
         const isMobile =
           typeof window !== "undefined" && window.innerWidth < 768;
         const baseIntensity = dramatic ? 1.0 : 0.65;
-        const neighborRange = 2; // only animate active and close neighbors
+        const blurMax = dramatic ? (isMobile ? 2 : 3) : (isMobile ? 1 : 1.5);
 
         for (let i = 0; i < cards.length; i++) {
           const el = cards[i];
@@ -151,62 +172,52 @@ export default function Carousel({
           }
 
           // Skip applying scroll effects during roulette to let CSS styling work
-          if (isRouletting) continue;
+          if (isRouletting) {
+            // Only update the active index during roulette, don't apply visual effects
+            continue;
+          }
 
-          // Only animate a small window around the active card to reduce work
-          // We don't know bestIdx yet on the first iterations, so approximate by distance in px
-          // and then reset outside range afterwards using bestIdx.
-        }
+          const t = Math.max(-1, Math.min(1, delta / (root.clientWidth / 2)));
+          const depth = 1 - Math.min(1, Math.abs(t));
 
-        // Apply transforms only to neighbors, reset others
-        if (!isRouletting) {
-          const activeIdx = bestIdx;
-          const start = Math.max(0, activeIdx - neighborRange);
-          const end = Math.min(cards.length - 1, activeIdx + neighborRange);
-          for (let i = 0; i < cards.length; i++) {
-            const el = cards[i];
-            if (i < start || i > end) {
-              // Reset styles for far cards
-              el.style.transform = "";
-              el.style.opacity = "";
-              continue;
-            }
-            const delta = centers[i] - viewCenter;
-            const t = Math.max(-1, Math.min(1, delta / (root.clientWidth / 2)));
-            const depth = 1 - Math.min(1, Math.abs(t));
-            const rot = -t * 18 * baseIntensity;
-            const scale = 0.86 + depth * 0.14;
-            const opacity = 0.55 + depth * 0.45;
-            el.style.transform = `translateZ(0) perspective(1000px) rotateY(${rot}deg) scale(${scale})`;
-            el.style.opacity = `${opacity}`;
+          const rot = -t * 15 * baseIntensity; // Enhanced 3D rotation
+          const scale = 0.85 + depth * 0.15; // More dramatic scale for 3D effect
+          const opacity = 0.6 + depth * 0.4; // Better contrast between active/inactive
+          const blur = Math.max(0, Math.abs(t) * blurMax);
+
+          // Apply smooth CSS transitions with 3D effect and smart scaling
+          el.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out';
+          el.style.transform = `translateZ(0) perspective(1000px) rotateY(${rot}deg) scale(${scale})`;
+          el.style.opacity = `${opacity}`;
+
+          const img = el.querySelector<HTMLElement>("[data-img]");
+          if (img) {
+            img.style.transition = 'filter 0.3s ease-out';
+            img.style.filter = `blur(${blur}px) saturate(${0.7 + depth * 0.3}) brightness(${0.85 + depth * 0.15})`;
           }
         }
 
-        if (bestIdx !== active) setActive(bestIdx);
+        if (bestIdx !== active && !isRouletting) setActive(bestIdx);
       });
     };
 
     root.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => root.removeEventListener("scroll", onScroll);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dramatic, items.length]);
+  }, [dramatic, items.length, active, isRouletting]);
 
   /* ---------- Programmatic scroll ---------- */
   const animateScrollTo = (left: number, ms: number) => {
     const root = scrollerRef.current;
     if (!root) return;
-
     if (ms <= 0) {
       root.scrollLeft = left;
       return;
     }
-
     const start = root.scrollLeft;
     const change = left - start;
     const startTime = performance.now();
     const duration = Math.max(1, ms);
-
     const easeInOutCubic = (t: number) =>
       t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -217,7 +228,6 @@ export default function Carousel({
       node.scrollLeft = start + change * easeInOutCubic(t);
       if (t < 1) requestAnimationFrame(step);
     };
-
     requestAnimationFrame(step);
   };
 
@@ -235,16 +245,17 @@ export default function Carousel({
     const btn = pillBtnRefs.current[i];
     if (!bar || !btn) return;
     const left = btn.offsetLeft - bar.clientWidth / 2 + btn.clientWidth / 2;
-    // No animation on pills: set scroll position directly
-    bar.scrollLeft = left;
+    bar.scrollTo({ left, behavior: prefersReduced ? "auto" : "smooth" });
   };
 
   const whipTo = (idx: number) => {
     const root = scrollerRef.current;
     const centers = centersRef.current;
     if (!root || !centers.length) return;
+
     const clamped = Math.max(0, Math.min(centers.length - 1, idx));
     const baseLeft = centers[clamped] - root.clientWidth / 2;
+
     const dir = baseLeft > root.scrollLeft ? 1 : -1;
     const overshoot = prefersReduced ? 0 : overshootPx * dir;
 
@@ -252,10 +263,7 @@ export default function Carousel({
     animateScrollTo(baseLeft + overshoot, Math.round(whipMs * 0.6));
     const t1 = window.setTimeout(() => {
       animateScrollTo(baseLeft, Math.round(whipMs * 0.4));
-      const t2 = window.setTimeout(
-        () => setDramatic(false),
-        Math.round(whipMs * 0.45)
-      );
+      const t2 = window.setTimeout(() => setDramatic(false), Math.round(whipMs * 0.45));
       timeoutsRef.current.push(t2);
     }, Math.round(whipMs * 0.6));
     timeoutsRef.current.push(t1);
@@ -265,13 +273,16 @@ export default function Carousel({
 
   // Touch gesture handlers
   const minSwipeDistance = 50;
+
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
+
   const onTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
+
   const onTouchEnd = () => {
     if (touchStart === null || touchEnd === null || isRouletting) return;
     const distance = touchStart - touchEnd;
@@ -287,6 +298,46 @@ export default function Carousel({
     }
   };
 
+  // Handle destination selection and navigation to trip builder
+  const handleDestinationSelect = (itemId: string) => {
+    const destination = CAROUSEL_TO_DESTINATION_MAP[itemId];
+    if (destination) {
+      // Find the selected item for better feedback
+      const selectedItem = items.find(item => item.id === itemId);
+      
+      // Show a brief success indicator
+      const indicator = document.createElement('div');
+      indicator.innerHTML = `
+        <div class="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg border border-green-500 animate-pulse">
+          ✓ Selected ${selectedItem?.title || destination}
+        </div>
+      `;
+      document.body.appendChild(indicator);
+      
+      // Remove indicator after 2 seconds
+      setTimeout(() => {
+        document.body.removeChild(indicator);
+      }, 2000);
+      
+      // Navigate to trip builder with selected destination
+      const targetElement = document.getElementById('trip-builder');
+      if (targetElement) {
+        // Scroll to trip builder section with selected destination
+        const url = new URL(window.location.href);
+        url.searchParams.set('destination', destination);
+        window.history.pushState({}, '', url.toString());
+        
+        // Add a small delay before scrolling for better UX
+        setTimeout(() => {
+          targetElement.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 500);
+      }
+    }
+  };
+
   const handleImageLoad = (imageId: string) => {
     setImagesLoaded((prev) => new Set(prev).add(imageId));
   };
@@ -298,8 +349,9 @@ export default function Carousel({
 
   const rouletteToDestination = (targetIndex: number) => {
     if (isRouletting) return; // Prevent stacking roulettes
+    if (targetIndex < 0 || targetIndex >= items.length) return; // Bounds check
+    
     clearRouletteTimers();
-
     setIsRouletting(true);
     setRouletteTarget(targetIndex);
 
@@ -318,7 +370,7 @@ export default function Carousel({
       ((targetIndex - currentIndex + totalItems) % totalItems);
 
     let currentStep = 0;
-    const baseSpeed = 60;
+    const baseSpeed = 80; // Slightly slower for smoother effect
 
     const rouletteStep = () => {
       if (currentStep >= totalSteps) {
@@ -327,9 +379,17 @@ export default function Carousel({
           centerIndex(targetIndex, 800);
           centerPill(targetIndex);
 
+          // Pointer functionality removed
+
           const tEnd = window.setTimeout(() => {
             setIsRouletting(false);
             setRouletteTarget(null);
+            
+            // Auto-fill destination in trip builder when roulette completes
+            const selectedItem = items[targetIndex];
+            if (selectedItem) {
+              handleDestinationSelect(selectedItem.id);
+            }
           }, 800);
           timeoutsRef.current.push(tEnd);
         }, 300);
@@ -342,6 +402,7 @@ export default function Carousel({
       // Enhanced realistic deceleration like real roulette
       const progress = currentStep / totalSteps;
       let delay = baseSpeed;
+
       if (progress < 0.5) {
         // Fast spinning phase (50% of rotation)
         delay = baseSpeed;
@@ -364,14 +425,16 @@ export default function Carousel({
       }
 
       // Add realistic physics variation
-      const variation = Math.random() * 0.3 - 0.15; // ±15% variation
+      const variation = Math.random() * 0.2 - 0.1; // Reduced variation for smoother effect
       delay *= 1 + variation;
 
+      // Pointer functionality removed - no wobble needed
+
       setActive(nextIndex);
-      centerIndex(nextIndex, Math.min(300, delay * 2));
+      centerIndex(nextIndex, Math.min(400, delay * 2)); // Smoother centering
 
       currentStep++;
-      const tid = window.setTimeout(rouletteStep, Math.max(80, delay));
+      const tid = window.setTimeout(rouletteStep, Math.max(100, delay));
       timeoutsRef.current.push(tid);
     };
 
@@ -380,6 +443,7 @@ export default function Carousel({
 
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (isRouletting) return; // block during roulette
+
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
       rouletteToDestination(Math.min(items.length - 1, active + 1));
@@ -399,17 +463,9 @@ export default function Carousel({
     }
   };
 
-  // Keep pills centered based on pillActive only
   useEffect(() => {
-    centerPill(pillActive);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pillActive]);
-
-  // Sync pillActive to active only when not rouletting (avoid animation chaining)
-  useEffect(() => {
-    if (!isRouletting) setPillActive(active);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, isRouletting]);
+    centerPill(active);
+  }, [active]);
 
   return (
     <section
@@ -418,26 +474,36 @@ export default function Carousel({
       className="relative w-full h-[100svh] min-h-[100svh] bg-black text-white"
       style={{ height: "100svh" }}
     >
-      {/* Header */}
-      <div className="absolute top-0 inset-x-0 z-10 bg-gradient-to-b from-black/50 via-black/20 to-transparent">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 lg:pt-6">
-          <SectionHeader
-            title={title}
-            subtitle="Explore the world's most exciting destinations and find your next adventure"
-            align="center"
-            tone="light"
-          />
+      {/* Header - more compact for phones */}
+      <div className="absolute top-0 inset-x-0 z-10 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 lg:pt-6">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
+              {title}
+            </h2>
+            <p
+              className="text-xs sm:text-sm md:text-base text-white/80 mt-0.5 sm:mt-1 drop-shadow-md"
+              aria-live="polite"
+            >
+              {isRouletting ? "🎲 Selecting destination..." : "Discover your next adventure"}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Carousel rail */}
+
+
+      {/* Carousel rail - mobile optimized */}
       <div
         ref={scrollerRef}
-        className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-[76px] sm:top-[140px] md:top-[160px] overflow-x-auto overflow-y-hidden no-scrollbar overscroll-x-contain snap-x snap-mandatory snap-always flex items-center gap-6 sm:gap-8 focus:outline-none"
+        className="absolute left-1 right-1 sm:left-3 sm:right-3 lg:left-6 lg:right-6
+                   top-[85px] sm:top-[105px] md:top-[125px]
+                   overflow-x-auto overflow-y-visible no-scrollbar overscroll-x-contain
+                   snap-x snap-mandatory snap-always flex items-center gap-2 sm:gap-3 md:gap-4 focus:outline-none"
         style={{
-          paddingLeft: `${gutters.left}px`,
-          paddingRight: `${gutters.right}px`,
-          bottom: `${Math.max(64, pillsH + 24)}px`, // small breathing room above pills
+          paddingLeft: `${gutters.left + 20}px`, // Adjusted for mobile
+          paddingRight: `${gutters.right + 20}px`, // Adjusted for mobile
+          bottom: `${Math.max(70, pillsH + 24)}px`, // Tighter for mobile
         }}
         tabIndex={0}
         onKeyDown={onKeyDown}
@@ -453,389 +519,192 @@ export default function Carousel({
             ref={(el) => {
               cardRefs.current[i] = el;
             }}
-            className="relative snap-center shrink-0 transition-transform duration-300 will-change-transform cursor-pointer touch-manipulation"
-            style={{ width: "clamp(240px, 70vw, 720px)" }}
+            className="relative snap-center shrink-0 transition-all duration-500 ease-out will-change-transform
+                       touch-manipulation"
+            style={{ width: "clamp(200px, 65vw, 500px)" }} // Smaller, more phone-friendly
             role="group"
             aria-roledescription="slide"
             aria-label={`${p.title} (${i + 1} of ${items.length})`}
           >
-            {i === active ? (
-              <BackgroundGradient
-                containerClassName="rounded-3xl isolate"
-                glowClassName="opacity-80"
-                animate
-              >
-                {/* Mobile-optimized aspect ratio - closer to portrait but not exactly 9:16 */}
-                <div
-                  className={`relative aspect-[10/16] md:aspect-[16/9] w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/50 group transition-all duration-500 ${
-                    i === active ? "scale-105" : "ring-1 ring-white/20"
-                  }`}
-                  style={
-                    isRouletting && i === active
-                      ? {
-                          // Force selection styling during roulette
-                          transform: "scale(1.05)",
-                          filter: "brightness(1.1) saturate(1.1)",
-                          zIndex: 10,
-                        }
-                      : {}
-                  }
-                >
-                  {/* Force selection ring during roulette */}
-                  {isRouletting && i === active && (
-                    <div className="absolute -inset-1 rounded-3xl ring-4 ring-white/90 ring-offset-4 ring-offset-black pointer-events-none" />
-                  )}
+            {/* Phone-optimized aspect ratio - more compact */}
+            <div
+              className={`relative aspect-[3/4] sm:aspect-[4/5] md:aspect-[16/10] w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/40 group transition-all duration-700 ease-out ${
+                i === active
+                  ? "ring-2 ring-white/90 ring-offset-1 ring-offset-transparent scale-100 sm:scale-105"
+                  : "ring-1 ring-white/20 opacity-75 scale-95 sm:scale-98"
+              }`}
+              style={
+                isRouletting && i === active
+                  ? {
+                      // Clean selection styling during roulette - no orange effects
+                      transform: "scale(1.02) translateZ(10px)",
+                      filter: "brightness(1.1) saturate(1.1)",
+                      zIndex: 10,
+                    }
+                  : i === active ? {
+                      transform: "scale(1.0) translateZ(5px)",
+                      filter: "brightness(1.05) saturate(1.05)",
+                    } : {
+                      transform: "scale(0.95) translateZ(-5px)",
+                      filter: "brightness(0.85) saturate(0.9) blur(0.3px)",
+                    }
+              }
+            >
+              {/* Force selection ring during roulette - reduced to prevent cutoff */}
+              {isRouletting && i === active && (
+                <div className="absolute inset-0 rounded-3xl ring-2 ring-white/90 ring-offset-1 ring-offset-black pointer-events-none" />
+              )}
 
-                  {/* Same radiating highlight for active card whether rouletting or static */}
-                  {i === active && (
-                    <>
-                      <div className="pointer-events-none absolute -inset-2 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.30),rgba(255,255,255,0.10),transparent)] animate-pulse" />
-                      <div
-                        className="pointer-events-none absolute -inset-4 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.20),rgba(255,255,255,0.05),transparent)] animate-pulse"
-                        style={{ animationDelay: "0.5s" }}
-                      />
-                    </>
-                  )}
+              {/* Same radiating highlight for active card whether rouletting or static - contained within bounds */}
+              {i === active && (
+                <>
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.20),rgba(255,255,255,0.05),transparent)] animate-pulse" />
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-white/10 via-transparent to-white/5 animate-pulse" />
+                </>
+              )}
 
-                  {/* Loading skeleton */}
-                  {!imagesLoaded.has(p.id) && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 animate-pulse">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-                      <div className="absolute bottom-4 left-4 right-4 space-y-2">
-                        <div className="h-6 bg-white/20 rounded-lg animate-pulse" />
-                        <div className="h-4 bg-white/10 rounded w-2/3 animate-pulse" />
-                      </div>
-                    </div>
-                  )}
-
-                  <Image
-                    data-img
-                    src={p.image}
-                    alt={p.alt || p.title}
-                    fill
-                    sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
-                    className={`object-cover object-center transition-[transform,opacity] duration-500 group-hover:scale-105 ${
-                      imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
-                    }`}
-                    priority={i === 0}
-                    onLoad={() => handleImageLoad(p.id)}
-                  />
-
-                  <div
-                    className="absolute inset-0 bg-black"
-                    style={{ opacity: overlay }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
-
-                  {/* Content overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                    <div className="space-y-2">
-                      <div className="text-xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
-                        {p.title}
-                      </div>
-
-                      {p.subtitle ? (
-                        <div className="text-sm sm:text-lg text-white/90 drop-shadow-md font-medium">
-                          {p.subtitle}
-                        </div>
-                      ) : (
-                        <div className="text-sm sm:text-base text-white/75 drop-shadow-md">
-                          Discover amazing destinations
-                        </div>
-                      )}
-
-                      <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-white/30 transition-all duration-200 border border-white/30">
-                          <span>Explore</span>
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+              {/* Loading skeleton */}
+              {!imagesLoaded.has(p.id) && (
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 animate-pulse">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+                  <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                    <div className="h-6 bg-white/20 rounded-lg animate-pulse" />
+                    <div className="h-4 bg-white/10 rounded w-2/3 animate-pulse" />
                   </div>
-
-                  {/* Removed mobile roulette color overlays to prevent orange/yellow tint */}
-
-                  {/* Mobile swipe indicator - only show on first card when not rouletting */}
-                  {i === 0 && !isRouletting && (
-                    <div className="md:hidden absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white/90 pointer-events-none border border-white/20 animate-bounce">
-                      Swipe →
-                    </div>
-                  )}
-
-                  {/* Shimmer for active card */}
-                  {i === active && !isRouletting && (
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-                  )}
                 </div>
-              </BackgroundGradient>
-            ) : (
-              /* Non-active card (no gradient wrapper) */
-              <div
-                className={`relative aspect-[10/16] md:aspect-[16/9] w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/50 group transition-all duration-500 ${
-                  i === active
-                    ? "ring-4 ring-white/90 ring-offset-4 ring-offset-black scale-105"
-                    : "ring-1 ring-white/20"
+              )}
+
+              <Image
+                data-img
+                src={p.image}
+                alt={p.alt || p.title}
+                fill
+                sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
+                className={`object-cover object-center transition-all duration-700 ease-out group-hover:scale-105 ${
+                  imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
                 }`}
-                style={
-                  isRouletting && i === active
-                    ? {
-                        // Force selection styling during roulette
-                        transform: "scale(1.05)",
-                        filter: "brightness(1.1) saturate(1.1)",
-                        zIndex: 10,
-                      }
-                    : {}
-                }
-              >
-                {/* Force selection ring during roulette */}
-                {isRouletting && i === active && (
-                  <div className="absolute -inset-1 rounded-3xl ring-4 ring-white/90 ring-offset-4 ring-offset-black pointer-events-none" />
-                )}
+                priority={i === 0}
+                onLoad={() => handleImageLoad(p.id)}
+              />
+              <div className="absolute inset-0 bg-black" style={{ opacity: overlay }} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
 
-                {/* Same radiating highlight for active card whether rouletting or static */}
-                {i === active && (
-                  <>
-                    <div className="pointer-events-none absolute -inset-2 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.30),rgba(255,255,255,0.10),transparent)] animate-pulse" />
-                    <div
-                      className="pointer-events-none absolute -inset-4 rounded-3xl bg-[radial-gradient(closest-side,rgba(255,255,255,0.20),rgba(255,255,255,0.05),transparent)] animate-pulse"
-                      style={{ animationDelay: "0.5s" }}
-                    />
-                  </>
-                )}
-
-                {/* Loading skeleton */}
-                {!imagesLoaded.has(p.id) && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 animate-pulse">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-                    <div className="absolute bottom-4 left-4 right-4 space-y-2">
-                      <div className="h-6 bg-white/20 rounded-lg animate-pulse" />
-                      <div className="h-4 bg-white/10 rounded w-2/3 animate-pulse" />
-                    </div>
+              {/* Content overlay - more compact for phones */}
+              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
+                    {p.title}
                   </div>
-                )}
-
-                <Image
-                  data-img
-                  src={p.image}
-                  alt={p.alt || p.title}
-                  fill
-                  sizes="(min-width: 1024px) 60vw, (min-width: 640px) 70vw, 80vw"
-                  className={`object-cover object-center transition-[transform,opacity] duration-500 group-hover:scale-105 ${
-                    imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
-                  }`}
-                  priority={i === 0}
-                  onLoad={() => handleImageLoad(p.id)}
-                />
-
-                <div
-                  className="absolute inset-0 bg-black"
-                  style={{ opacity: overlay }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
-
-                {/* Content overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                  <div className="space-y-2">
-                    <div className="text-xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
-                      {p.title}
+                  {p.subtitle ? (
+                    <div className="text-xs sm:text-sm md:text-base lg:text-lg text-white/90 drop-shadow-md font-medium">
+                      {p.subtitle}
                     </div>
-
-                    {p.subtitle ? (
-                      <div className="text-sm sm:text-lg text-white/90 drop-shadow-md font-medium">
-                        {p.subtitle}
-                      </div>
-                    ) : (
-                      <div className="text-sm sm:text-base text-white/75 drop-shadow-md">
-                        Discover amazing destinations
-                      </div>
-                    )}
-
-                    <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <button className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-white/30 transition-all duration-200 border border-white/30">
-                        <span>Explore</span>
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </button>
+                  ) : (
+                    <div className="text-xs sm:text-sm text-white/75 drop-shadow-md">
+                      Discover amazing destinations
                     </div>
+                  )}
+                  <div className="pt-1 sm:pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent double triggering
+                        handleDestinationSelect(p.id);
+                      }}
+                      className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs sm:text-sm font-medium hover:bg-white/30 transition-all duration-200 border border-white/30"
+                    >
+                      <span>Explore</span>
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-
-                {/* Removed mobile roulette color overlays to prevent orange/yellow tint */}
-
-                {/* Mobile swipe indicator - only show on first card when not rouletting */}
-                {i === 0 && !isRouletting && (
-                  <div className="md:hidden absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white/90 pointer-events-none border border-white/20 animate-bounce">
-                    Swipe →
-                  </div>
-                )}
-
-                {/* Shimmer for active card */}
-                {i === active && !isRouletting && (
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-                )}
               </div>
-            )}
+
+
+
+              {/* Mobile swipe indicator - only show on first card when not rouletting */}
+              {i === 0 && !isRouletting && (
+                <div className="md:hidden absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white/90 pointer-events-none border border-white/20 animate-bounce">
+                  Swipe →
+                </div>
+              )}
+
+              {/* Active destination selection indicator */}
+              {i === active && !isRouletting && (
+                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white font-semibold pointer-events-none border border-white/30 animate-pulse">
+                  Click to Select
+                </div>
+              )}
+
+              {/* Shimmer for active card */}
+              {i === active && !isRouletting && (
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+              )}
+            </div>
           </div>
         ))}
-
         <div className="shrink-0 w-[1px]" aria-hidden />
       </div>
 
       {/* Pills Navigation */}
-      <div className="absolute bottom-3 inset-x-0 z-20 pb-6">
+      <div className="absolute bottom-3 inset-x-0 z-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative">
-            {/* MOBILE: Horizontal scroller */}
-            <div className="md:hidden">
-              {/* helper text with bi-directional arrows */}
-              <div className="pb-2 text-center text-xs text-white/70 flex items-center justify-center gap-2">
-                <svg
-                  aria-hidden="true"
-                  className="h-3 w-3 text-white/60"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-                <span>Scroll the pills to see more options</span>
-                <svg
-                  aria-hidden="true"
-                  className="h-3 w-3 text-white/60"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9 6l6 6-6 6" />
-                </svg>
-              </div>
-              {/* edge fades on mobile */}
-              <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black via-black/70 to-transparent z-10" />
-              <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black via-black/70 to-transparent z-10" />
+            {/* edge fades on mobile */}
+            <div className="pointer-events-none md:hidden absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black via-black/70 to-transparent z-10" />
+            <div className="pointer-events-none md:hidden absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black via-black/70 to-transparent z-10" />
 
-              <div
-                ref={pillsRef}
-                role="tablist"
-                aria-label="Destinations filter"
-                className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar py-1 snap-x snap-mandatory"
-              >
-                {items.map((p, i) => (
-                  <button
-                    key={p.id}
-                    ref={(el) => {
-                      pillBtnRefs.current[i] = el;
-                    }}
-                    onClick={() => {
-                      setPillActive(i);
-                      rouletteToDestination(i);
-                    }}
-                    role="tab"
-                    aria-selected={i === pillActive}
-                    aria-controls={`${id}-slide-${i}`}
-                    disabled={isRouletting}
-                    className={` relative inline-flex items-center justify-center snap-center whitespace-nowrap rounded-full border px-4 pt-[2px] pb-2 text-sm font-medium backdrop-blur-sm w-auto text-center touch-manipulation ${
-                      isRouletting ? "opacity-75" : ""
-                    } ${
-                      i === rouletteTarget && isRouletting
-                        ? "border-yellow-400 text-yellow-300 bg-yellow-400/20 shadow-lg shadow-yellow-400/50"
-                        : i === pillActive
-                        ? "border-white/80 text-white bg-transparent md:bg-transparent md:text-white md:border-white md:shadow-lg shadow-white/25"
-                        : "border-white/30 text-white/90 shadow-lg shadow-black/25"
-                    }`}
-                  >
-                    <span className="inline-block translate-y-[0.5px] tracking-wide">
-                      {p.title}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* DESKTOP: Two rows, centered with natural widths (no rigid grid) */}
-            {(() => {
-              const perRow = Math.ceil(items.length / 2) || 1;
-              const row1 = items.slice(0, perRow);
-              const row2 = items.slice(perRow);
-
-              const Pill = (p: Place, i: number) => (
+            <div
+              ref={pillsRef}
+              role="tablist"
+              aria-label="Destinations filter"
+              className="
+                flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar py-1
+                snap-x snap-mandatory
+                md:flex-wrap md:overflow-visible md:snap-none md:justify-center
+              "
+            >
+              {items.map((p, i) => (
                 <button
                   key={p.id}
+                  ref={(el) => {
+                    pillBtnRefs.current[i] = el;
+                  }}
                   onClick={() => {
-                    setPillActive(i);
-                    rouletteToDestination(i);
+                    if (i === active && !isRouletting) {
+                      // If clicking the active pill, select the destination
+                      handleDestinationSelect(p.id);
+                    } else {
+                      // Otherwise, just navigate to that destination in carousel
+                      rouletteToDestination(i);
+                    }
                   }}
                   role="tab"
-                  aria-selected={i === pillActive}
+                  aria-selected={i === active}
                   aria-controls={`${id}-slide-${i}`}
                   disabled={isRouletting}
-                  className={` whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-sm min-w-[96px] text-center ${
-                    isRouletting ? "opacity-75" : ""
-                  } ${
-                    i === rouletteTarget && isRouletting
-                      ? "border-yellow-400 text-yellow-300 bg-yellow-400/20 shadow-lg shadow-yellow-400/50"
-                      : i === pillActive
-                      ? "border-white/80 text-white bg-transparent md:bg-transparent md:text-white md:border-white md:shadow-lg shadow-white/25"
-                      : "border-white/30 text-white/90 shadow-lg shadow-black/25"
-                  }`}
+                  className={`
+                    relative snap-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300
+                    backdrop-blur-sm min-w-[80px] text-center
+                    hover:scale-105 active:scale-95 touch-manipulation
+                    ${isRouletting ? "opacity-75" : ""}
+                    ${
+                      i === rouletteTarget && isRouletting
+                        ? "border-white text-white bg-white/25 shadow-lg shadow-white/50 scale-110"
+                        : i === active
+                        ? "border-white/80 text-white bg-white/15 md:bg-white md:text-black md:border-white md:shadow-lg shadow-white/25 scale-105"
+                        : "border-white/30 text-white/90 hover:bg-white/10 hover:border-white/50 shadow-lg shadow-black/25"
+                    }
+                  `}
                 >
                   <span className="inline-block translate-y-[0.5px] tracking-wide">
                     {p.title}
                   </span>
                 </button>
-              );
-
-              return (
-                <div className="hidden md:block">
-                  <div className="space-y-2">
-                    <div
-                      className="flex flex-wrap justify-center gap-2"
-                      role="tablist"
-                      aria-label="Destinations filter row 1"
-                    >
-                      {row1.map((p, i) => Pill(p, i))}
-                    </div>
-                    <div
-                      className="flex flex-wrap justify-center gap-2"
-                      role="tablist"
-                      aria-label="Destinations filter row 2"
-                    >
-                      {row2.map((p, i) => Pill(p, i + row1.length))}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
+              ))}
+            </div>
           </div>
         </div>
       </div>

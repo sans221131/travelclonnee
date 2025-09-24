@@ -320,13 +320,10 @@ export default function SmartFAQ() {
         <div className="mb-8 sm:mb-10">
           <SectionHeader
             title="Smart FAQ"
-            subtitle="Search, filter, deep link. Press / to focus search."
+            subtitle="Find answers to common questions about our services."
             align="left"
             tone="light"
           />
-          <p className="mt-2 text-xs tracking-[0.25em] text-white/50 uppercase">
-            Answers, on tap
-          </p>
         </div>
 
         {/* Two-pane layout */}

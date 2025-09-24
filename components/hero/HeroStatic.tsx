@@ -52,7 +52,7 @@ export default function HeroStatic() {
   return (
     <div className="relative bg-gradient-to-b from-[#101212] to-[#08201D]">
       <section
-        className="relative min-h-[85svh] sm:min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-40 lg:pt-48 pb-8 sm:pb-16 lg:pb-[20rem] overflow-hidden"
+        className="relative min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-24 lg:pt-48 pb-[240px] sm:pb-[280px] lg:pb-[20rem] overflow-hidden"
         aria-label="Hero"
       >
         {/* Desktop stack */}
@@ -91,7 +91,7 @@ export default function HeroStatic() {
         </div>
 
         {/* Mobile grid with real videos */}
-        <div className="lg:hidden absolute inset-x-0 bottom-8 z-10 px-3 pb-3">
+        <div className="lg:hidden absolute inset-x-0 bottom-8 z-10 px-4">
           <div className="grid grid-cols-2 gap-3">
             {CARDS.map((c) => (
               <div
@@ -99,7 +99,7 @@ export default function HeroStatic() {
                 className="rounded-2xl overflow-hidden ring-1 ring-white/10 bg-white/5"
               >
                 <video
-                  className="h-40 sm:h-48 w-full object-cover"
+                  className="h-36 sm:h-40 w-full object-cover"
                   src={c.video}
                   poster={c.img}
                   muted
@@ -125,23 +125,23 @@ export default function HeroStatic() {
 function CopyBlock({ zClass = "z-20" }: { zClass?: string }) {
   return (
     <div
-      className={`relative ${zClass} px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-8 mb-12 sm:mb-16 lg:mb-12`}
+      className={`relative ${zClass} px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-8 mb-16 sm:mb-20 lg:mb-12`}
     >
       <div className="max-w-4xl mx-auto text-center">
         <h1
           data-anim="headline"
-          className="text-5xl font-extrabold sm:text-7xl lg:text-8xl leading-tight tracking-tight"
+          className="text-4xl font-extrabold sm:text-6xl lg:text-8xl leading-[1.1] tracking-tight"
         >
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-300">
             Plan Smart.
           </span>
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-300">
-            Travel Better
+            Travel Better.
           </span>
         </h1>
         <p
           data-anim="subhead"
-          className="mt-6 sm:mt-8 text-base text-white/80 sm:text-xl lg:text-2xl leading-relaxed max-w-2xl mx-auto"
+          className="mt-6 sm:mt-8 text-base sm:text-lg lg:text-xl leading-relaxed text-white/80 max-w-2xl mx-auto"
         >
           Tailored trips for Indians and NRIs. Real quotes, secure payments, and
           human help when you need it.

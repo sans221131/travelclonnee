@@ -160,11 +160,7 @@ export default function SiteFooterMonochrome() {
                     Careers
                   </Link>
                 </li>
-                <li>
-                  <Link href="#press" className="text-white/80 transition hover:text-white">
-                    Press
-                  </Link>
-                </li>
+               
               </ul>
             </nav>
 
@@ -184,11 +180,7 @@ export default function SiteFooterMonochrome() {
                     Email the Team
                   </a>
                 </li>
-                <li>
-                  <Link href="#whatsapp" className="text-white/80 transition hover:text-white">
-                    WhatsApp Concierge
-                  </Link>
-                </li>
+              
                 <li>
                   <Link href="#support" className="text-white/80 transition hover:text-white">
                     Call Support
@@ -220,11 +212,7 @@ export default function SiteFooterMonochrome() {
                   Accessibility
                 </Link>
               </li>
-              <li>
-                <Link href="#sitemap" className="transition hover:text-white">
-                  Sitemap
-                </Link>
-              </li>
+             
             </ul>
           </div>
         </div>

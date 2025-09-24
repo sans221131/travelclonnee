@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { dunbarText } from "@/public/fonts/font";
+import ClientLayout from "@/components/layout/ClientLayout";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${dunbarText.variable} antialiased`}>{children}</body>
+      <body className={`${dunbarText.variable} antialiased`}>
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   );
 }
