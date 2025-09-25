@@ -445,13 +445,6 @@ export default function SmartFAQ() {
                   </div>
                 </div>
               </div>
-
-              {/* Count card */}
-              <div className="mt-4 panel rounded-xl px-4 py-3 text-sm text-white/70">
-                <span className="text-white">{ranked.results.length}</span>{" "}
-                result
-                {ranked.results.length === 1 ? "" : "s"} found
-              </div>
             </div>
           </aside>
 

@@ -541,9 +541,14 @@ export default function TripBuilderLite() {
     setAnswers((a) => ({
       ...a,
       seededDestination: undefined,
+      destination: undefined, // Clear any existing destination selection
       seedPromptShown: true,
     }));
-    const to = steps.indexOf("destinationSelect");
+    
+    // Calculate the new steps array after clearing seeded destination
+    const newSteps = STEPS.filter((s) => s !== "destinationSeed");
+    const to = newSteps.indexOf("destinationSelect");
+    
     if (to >= 0) {
       setTimeout(() => {
         setIdx(to);
@@ -645,7 +650,7 @@ export default function TripBuilderLite() {
         <div className="glowbar mx-auto h-32 w-[135%]" />
       </div>
 
-      <div className="w-full max-w-none px-4 pt-4 pb-[88px] sm:px-4 sm:pt-12 md:pt-16 md:max-w-2xl lg:max-w-4xl md:mx-auto">
+      <div className="w-full max-w-none px-4 pt-8 pb-8 sm:px-4 sm:pt-16 sm:pb-16 md:pt-20 md:pb-20 md:max-w-2xl lg:max-w-4xl md:mx-auto">
         <div className="mb-4 sm:mb-8">
           <SectionHeader
             id="tripbuilder-heading"
@@ -937,7 +942,7 @@ export default function TripBuilderLite() {
 
                   {current === "phoneNumber" && (
                     <StepShell title="Best phone number?">
-                      <div className="grid grid-cols-[100px_1fr] gap-2 sm:grid-cols-[140px_1fr] sm:gap-3">
+                      <div className="grid grid-cols-[110px_1fr] gap-3 sm:grid-cols-[140px_1fr] sm:gap-3">
                         <Labeled field="pcode" label="Country code">
                           <input
                             id="pcode"
@@ -946,7 +951,7 @@ export default function TripBuilderLite() {
                             inputMode="tel"
                             maxLength={4}
                             pattern="\+[1-9]\d{0,2}"
-                            value={answers.phoneCountryCode ?? ""}
+                            value={answers.phoneCountryCode ?? "+91"}
                             onChange={(e) => {
                               const newCode = e.target.value;
                               // Allow only +1 to +999 format
@@ -964,7 +969,7 @@ export default function TripBuilderLite() {
                           <input
                             id="pnum"
                             type="tel"
-                            placeholder=""
+                            placeholder="98765 43210"
                             inputMode="tel"
                             autoComplete="tel"
                             maxLength={20}
@@ -1109,10 +1114,14 @@ export default function TripBuilderLite() {
                           />
                           <Row term="Email" def={answers.email} />
                           <Row term="Nationality" def={answers.nationality} />
-                          <Row term="Airline" def={answers.airlinePref} />
-                          <Row term="Hotel" def={answers.hotelPref} />
-                          <Row term="Class" def={answers.flightClass} />
-                          <Row term="Visa" def={answers.visaStatus} />
+                          <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+                            <Row term="Airline" def={answers.airlinePref} />
+                            <Row term="Class" def={answers.flightClass} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+                            <Row term="Hotel" def={answers.hotelPref} />
+                            <Row term="Visa" def={answers.visaStatus} />
+                          </div>
                         </dl>
                       </div>
                       <p className="mt-3 text-sm text-zinc-400">
@@ -1242,7 +1251,116 @@ export default function TripBuilderLite() {
             font-weight: 600;
           }
         }
+
+        /* Loading animation styles */
+        .loading-popup {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(8px);
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        .loading-card {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05)
+          );
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 1.5rem;
+          padding: 2rem;
+          text-align: center;
+          backdrop-filter: blur(20px);
+          box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+          animation: slideUp 0.4s ease-out;
+          min-width: 280px;
+        }
+        
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(255, 255, 255, 0.2);
+          border-top: 4px solid #fff;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 1rem;
+        }
+        
+        .pulse-dots {
+          display: flex;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-top: 1rem;
+        }
+        
+        .pulse-dot {
+          width: 8px;
+          height: 8px;
+          background: rgba(255, 255, 255, 0.7);
+          border-radius: 50%;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .pulse-dot:nth-child(2) { animation-delay: 0.2s; }
+        .pulse-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(20px) scale(0.95); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+          }
+        }
+        
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { 
+            opacity: 0.3; 
+            transform: scale(0.8); 
+          }
+          50% { 
+            opacity: 1; 
+            transform: scale(1); 
+          }
+        }
       `}</style>
+
+      {/* Loading Popup */}
+      {submitting === "saving" && (
+        <div className="loading-popup">
+          <div className="loading-card">
+            <div className="spinner"></div>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              Creating Your Trip
+            </h3>
+            <p className="text-sm text-white/70 mb-1">
+              Processing your preferences...
+            </p>
+            <div className="pulse-dots">
+              <div className="pulse-dot"></div>
+              <div className="pulse-dot"></div>
+              <div className="pulse-dot"></div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

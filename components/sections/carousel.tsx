@@ -627,12 +627,7 @@ export default function Carousel({
               )}
 
               {/* Active destination selection indicator */}
-              {i === active && !isRouletting && (
-                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white font-semibold pointer-events-none border border-white/30 animate-pulse">
-                  Click to Select
-                </div>
-              )}
-
+             
               {/* Shimmer for active card */}
               {i === active && !isRouletting && (
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />

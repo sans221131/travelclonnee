@@ -303,9 +303,9 @@ export default async function ReceiptPage(props: {
         <div className="glowbar mx-auto h-32 w-[135%]" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+      <div className="mx-auto max-w-5xl px-4 py-16 sm:py-20">
         {/* Back to Homepage Button */}
-        <div className="mb-6">
+        <div className="mb-8 sm:mb-10">
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
@@ -329,14 +329,14 @@ export default async function ReceiptPage(props: {
 
         {/* Trip Summary (replaces the old invoice/pay ticket) */}
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-b from-zinc-950/70 to-zinc-900/60 p-0.5 backdrop-blur">
-          <div className="relative rounded-[28px] bg-zinc-950/60 p-5 sm:p-7">
+          <div className="relative rounded-[28px] bg-zinc-950/60 p-6 sm:p-8">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 rounded-[28px] ring-1 ring-white/10 [box-shadow:0_0_0_1px_rgba(255,255,255,0.04),0_0_40px_2px_rgba(180,180,255,0.08)_inset]"
             />
 
             {/* header strip */}
-            <div className="mb-5">
+            <div className="mb-6 sm:mb-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/90" />
                 Trip summary
@@ -344,9 +344,9 @@ export default async function ReceiptPage(props: {
             </div>
 
             {/* main grid */}
-            <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[auto_1fr]">
+            <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-[auto_1fr] lg:gap-12">
               {/* left: badge plane */}
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center sm:justify-start">
                 <div className="relative grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-b from-white/[0.06] to-white/[0.02] ring-1 ring-white/10">
                   <svg
                     width="44"
@@ -364,17 +364,17 @@ export default async function ReceiptPage(props: {
               </div>
 
               {/* center: route + chips */}
-              <div className="min-w-0">
+              <div className="min-w-0 text-center sm:text-left">
                 <h1 className="text-balance text-2xl font-semibold text-white sm:text-3xl">
                   {cityToIATA(tr.origin)}
-                  <span className="mx-2 inline-flex items-center text-zinc-400">
-                    <span className="mx-1 hidden h-px w-6 bg-white/20 sm:inline-block" />
-                    →<span className="mx-1 hidden h-px w-6 bg-white/20 sm:inline-block" />
+                  <span className="mx-3 inline-flex items-center text-zinc-400">
+                    <span className="mx-2 hidden h-px w-8 bg-white/20 sm:inline-block" />
+                    →<span className="mx-2 hidden h-px w-8 bg-white/20 sm:inline-block" />
                   </span>
                   {cityToIATA(tr.destination)}
                 </h1>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-3">
                   <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white">
                     {fmtDate(tr.startDate)} <span className="text-zinc-400">to</span>{" "}
                     {fmtDate(tr.endDate)}
@@ -397,20 +397,19 @@ export default async function ReceiptPage(props: {
                 </div>
               </div>
 
-
             </div>
 
             {/* decorative route line */}
             <div
               aria-hidden
-              className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+              className="mt-8 h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
             />
           </div>
         </div>
 
         {/* Activities grid */}
-        <div className="mt-10">
-          <div className="mb-4 flex items-baseline justify-between">
+        <div className="mt-14 sm:mt-16">
+          <div className="mb-6 flex items-baseline justify-between">
             <h2 className="text-xl font-semibold text-white sm:text-2xl">
               Activities in {cityToIATA(tr.destination)}
             </h2>

@@ -1,22 +1,18 @@
 // lib/trip-builder/guardrails.ts
 export const DESTINATIONS = [
   "Dubai, UAE",
-  "Singapore, Singapore", 
   "Bangkok, Thailand",
-  "Bali, Indonesia",
-  "Istanbul, Turkey",
-  "Maldives, Maldives",
-  "Phuket, Thailand",
-  "Doha, Qatar",
-  "Paris, France",
   "London, UK",
-  "Tokyo, Japan",
   "New York, USA",
+  "Bali, Indonesia",
   "Switzerland",
-  "Rajasthan, India",
+  "Paris, France",
+  "Phuket, Thailand",
+  "Maldives, Maldives",
   "Kerala, India",
-  "Ladakh, India",
   "Himachal Pradesh, India",
+  "Rajasthan, India",
+  "Ladakh, India",
 ] as const;
 
 export const ORIGIN_CITIES = [
@@ -79,19 +75,13 @@ export const VISA_STATUS = ["Available", "N/A"] as const;
 // Keep these brand-safe and non-claimy.
 const FACTS: Record<string, string> = {
   "Dubai, UAE": "Desert meets skyscrapers; family-friendly and easy to plan.",
-  "Singapore, Singapore":
-    "Compact, spotless, wildly efficient. Food courts are elite.",
   "Bangkok, Thailand": "Temples by day, markets by night. Great value.",
   "Bali, Indonesia": "Beach + rice terraces. Photogenic to a rude degree.",
-  "Istanbul, Turkey": "Two continents, one city. History stacked on history.",
   "Maldives, Maldives": "Clear lagoons, overwater villas, escape energy.",
   "Phuket, Thailand":
     "Tropical paradise with stunning beaches and vibrant nightlife.",
-  "Doha, Qatar":
-    "Modern architecture meets traditional culture in the heart of the Middle East.",
   "Paris, France": "The city of lights, romance, and world-class cuisine.",
   "London, UK": "Royal heritage meets modern culture in this iconic city.",
-  "Tokyo, Japan": "Where ancient traditions blend seamlessly with cutting-edge technology.",
   "New York, USA": "The city that never sleeps, full of endless possibilities.",
   "Switzerland": "Alpine beauty, pristine lakes, and charming mountain villages.",
   "Rajasthan, India": "Land of kings, majestic palaces, and desert adventures.",
