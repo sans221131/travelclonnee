@@ -55,6 +55,128 @@ function slugify(s: string) {
     .replace(/\s+/g, "-");
 }
 
+// Convert city names to IATA airport codes
+function cityToIATA(cityName: string): string {
+  const normalized = cityName.toLowerCase().trim();
+  
+  const iataMap: Record<string, string> = {
+    // Indian cities
+    "mumbai": "BOM",
+    "mumbai, india": "BOM",
+    "bombay": "BOM",
+    "delhi": "DEL", 
+    "delhi, india": "DEL",
+    "new delhi": "DEL",
+    "bangalore": "BLR",
+    "bangalore, india": "BLR",
+    "bengaluru": "BLR",
+    "bengaluru, india": "BLR",
+    "hyderabad": "HYD",
+    "hyderabad, india": "HYD", 
+    "chennai": "MAA",
+    "chennai, india": "MAA",
+    "madras": "MAA",
+    "kolkata": "CCU",
+    "kolkata, india": "CCU",
+    "calcutta": "CCU",
+    "pune": "PNQ",
+    "pune, india": "PNQ",
+    "ahmedabad": "AMD",
+    "ahmedabad, india": "AMD",
+    "jaipur": "JAI",
+    "jaipur, india": "JAI",
+    "lucknow": "LKO",
+    "lucknow, india": "LKO",
+    "kanpur": "KNU",
+    "kanpur, india": "KNU",
+    "nagpur": "NAG",
+    "nagpur, india": "NAG",
+    "indore": "IDR",
+    "indore, india": "IDR",
+    "bhopal": "BHO",
+    "bhopal, india": "BHO",
+    "visakhapatnam": "VTZ",
+    "visakhapatnam, india": "VTZ",
+    "patna": "PAT",
+    "patna, india": "PAT",
+    "vadodara": "BDQ",
+    "vadodara, india": "BDQ",
+    "ghaziabad": "DEL", // Usually served by Delhi
+    "ghaziabad, india": "DEL",
+    "ludhiana": "LUH",
+    "ludhiana, india": "LUH",
+    "agra": "AGR",
+    "agra, india": "AGR",
+    "nashik": "ISK",
+    "nashik, india": "ISK",
+    "faridabad": "DEL", // Usually served by Delhi
+    "faridabad, india": "DEL",
+    "meerut": "DEL", // Usually served by Delhi
+    "meerut, india": "DEL",
+    "rajkot": "RAJ",
+    "rajkot, india": "RAJ",
+    "varanasi": "VNS",
+    "varanasi, india": "VNS",
+    "srinagar": "SXR",
+    "srinagar, india": "SXR",
+    
+    // International destinations
+    "dubai": "DXB",
+    "dubai, uae": "DXB",
+    "london": "LHR",
+    "london, uk": "LHR",
+    "new york": "JFK",
+    "new york, usa": "JFK",
+    "singapore": "SIN",
+    "singapore, singapore": "SIN",
+    "tokyo": "NRT",
+    "tokyo, japan": "NRT",
+    "bangkok": "BKK",
+    "bangkok, thailand": "BKK",
+    "bali": "DPS",
+    "bali, indonesia": "DPS",
+    "denpasar": "DPS",
+    "istanbul": "IST",
+    "istanbul, turkey": "IST",
+    "doha": "DOH",
+    "doha, qatar": "DOH",
+    "paris": "CDG",
+    "paris, france": "CDG",
+    "zurich": "ZUR",
+    "zurich, switzerland": "ZUR",
+    "geneva": "GVA",
+    "geneva, switzerland": "GVA",
+    
+    // Regional/state destinations (using major airport)
+    "kerala": "COK", // Kochi
+    "kerala, india": "COK",
+    "rajasthan": "JAI", // Jaipur
+    "rajasthan, india": "JAI", 
+    "himachal pradesh": "KUU", // Kullu
+    "himachal": "KUU",
+    "ladakh": "LEH",
+    "ladakh, india": "LEH",
+    "uttarakhand": "DED", // Dehradun
+    "uttarakhand, india": "DED",
+    "assam": "GAU", // Guwahati
+    "assam, india": "GAU",
+    "meghalaya": "SHL", // Shillong
+    "meghalaya, india": "SHL",
+    "mysore": "MYQ",
+    "mysore, india": "MYQ",
+    
+    // Country-level mappings
+    "thailand": "BKK",
+    "united states": "JFK",
+    "usa": "JFK", 
+    "switzerland": "ZUR",
+    "bhutan": "PBH", // Paro
+    "maldives": "MLE" // Male
+  };
+
+  return iataMap[normalized] || cityName.split(",")[0].substring(0, 3).toUpperCase();
+}
+
 // Map destination display names to normalized database destination_ids
 function getDestinationId(destination: string): string {
   const normalized = destination.toLowerCase().trim();
@@ -244,12 +366,12 @@ export default async function ReceiptPage(props: {
               {/* center: route + chips */}
               <div className="min-w-0">
                 <h1 className="text-balance text-2xl font-semibold text-white sm:text-3xl">
-                  {tr.origin}
+                  {cityToIATA(tr.origin)}
                   <span className="mx-2 inline-flex items-center text-zinc-400">
                     <span className="mx-1 hidden h-px w-6 bg-white/20 sm:inline-block" />
                     →<span className="mx-1 hidden h-px w-6 bg-white/20 sm:inline-block" />
                   </span>
-                  {tr.destination}
+                  {cityToIATA(tr.destination)}
                 </h1>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -290,7 +412,7 @@ export default async function ReceiptPage(props: {
         <div className="mt-10">
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="text-xl font-semibold text-white sm:text-2xl">
-              Activities in {tr.destination}
+              Activities in {cityToIATA(tr.destination)}
             </h2>
             <span className="text-xs text-zinc-400" aria-live="polite">
               {activities.length} found

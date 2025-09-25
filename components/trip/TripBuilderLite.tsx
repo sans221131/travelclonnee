@@ -28,7 +28,7 @@ type Answers = {
   children?: number;
 
   passengerName?: string;
-  phoneCountryCode?: string; // "+91"
+  phoneCountryCode?: string; // "+"
   phoneNumber?: string;
   email?: string;
   nationality?: string;
@@ -294,7 +294,7 @@ export default function TripBuilderLite() {
     adults: 1,
     children: 0,
     seedPromptShown: false,
-    phoneCountryCode: "+91",
+    phoneCountryCode: "+",
   });
 
   // Handle carousel destination selection from URL parameters
@@ -528,13 +528,14 @@ export default function TripBuilderLite() {
       seededDestination: undefined,
       seedPromptShown: true,
     }));
-    const to = steps.indexOf("dates");
-    if (to >= 0) {
-      setTimeout(() => {
-        setIdx(to);
-        setMaxVisited((v) => Math.max(v, to));
-      }, 100);
-    }
+    // Use normal progression logic instead of jumping to dates
+    setTimeout(() => {
+      setIdx((i) => {
+        const ni = Math.min(i + 1, steps.length - 1);
+        setMaxVisited((v) => Math.max(v, ni));
+        return ni;
+      });
+    }, 100);
   }
   function changeDestination() {
     setAnswers((a) => ({
@@ -937,7 +938,7 @@ export default function TripBuilderLite() {
                   {current === "phoneNumber" && (
                     <StepShell title="Best phone number?">
                       <div className="grid grid-cols-[100px_1fr] gap-2 sm:grid-cols-[140px_1fr] sm:gap-3">
-                        <Labeled field="pcode" label="">
+                        <Labeled field="pcode" label="Country code">
                           <input
                             id="pcode"
                             type="tel"
@@ -959,11 +960,11 @@ export default function TripBuilderLite() {
                             className="input"
                           />
                         </Labeled>
-                        <Labeled field="pnum" label="">
+                        <Labeled field="pnum" label="Phone number">
                           <input
                             id="pnum"
                             type="tel"
-                            placeholder="98765 43210"
+                            placeholder=""
                             inputMode="tel"
                             autoComplete="tel"
                             maxLength={20}
