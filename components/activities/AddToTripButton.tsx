@@ -51,8 +51,8 @@ export default function AddToTripButton({
 
   const label =
     status === "adding" ? "Adding..." :
-    status === "added" ? "Added to cart" :
-    inCart ? "In cart" : "Add to cart";
+    status === "added" ? "Added " :
+    inCart ? "In cart" : "Add";
 
   return (
     <button

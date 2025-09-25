@@ -182,6 +182,29 @@ export default async function ReceiptPage(props: {
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+        {/* Back to Homepage Button */}
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
+          >
+            <svg 
+              className="h-4 w-4" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M15 19l-7-7 7-7" 
+              />
+            </svg>
+            Back to Home
+          </Link>
+        </div>
+
         {/* Trip Summary (replaces the old invoice/pay ticket) */}
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-b from-zinc-950/70 to-zinc-900/60 p-0.5 backdrop-blur">
           <div className="relative rounded-[28px] bg-zinc-950/60 p-5 sm:p-7">
@@ -199,7 +222,7 @@ export default async function ReceiptPage(props: {
             </div>
 
             {/* main grid */}
-            <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[auto_1fr_auto]">
+            <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[auto_1fr]">
               {/* left: badge plane */}
               <div className="flex items-center justify-center">
                 <div className="relative grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-b from-white/[0.06] to-white/[0.02] ring-1 ring-white/10">
@@ -252,15 +275,7 @@ export default async function ReceiptPage(props: {
                 </div>
               </div>
 
-              {/* right: destination tag */}
-              <div className="justify-self-start sm:justify-self-end">
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-right">
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-400">
-                    Destination ID
-                  </div>
-                  <div className="mt-1 text-sm text-white">{destinationId}</div>
-                </div>
-              </div>
+
             </div>
 
             {/* decorative route line */}

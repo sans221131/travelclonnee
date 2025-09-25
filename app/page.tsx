@@ -163,10 +163,11 @@ export default function HomePage() {
         />
 
         {/* Section 3: How It Works — GSAP Motion Path */}
-        <RunwayBands />
+        <TripBuilderWrapper />
 
         {/* Section 4: Trip Builder Lite */}
-        <TripBuilderWrapper />
+       
+         <RunwayBands />
 
         {/* Section 5: Have an Invoice?  — NOT full screen */}
         {/* Replaces the old FullScreenSection so it isn't 100svh. */}

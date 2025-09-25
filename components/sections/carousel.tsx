@@ -291,14 +291,18 @@ export default function Carousel({
 
     if (isLeftSwipe) {
       const nextIndex = Math.min(items.length - 1, active + 1);
-      rouletteToDestination(nextIndex);
+      // Use simple centering instead of roulette for swipes
+      centerIndex(nextIndex);
+      centerPill(nextIndex);
     } else if (isRightSwipe) {
       const prevIndex = Math.max(0, active - 1);
-      rouletteToDestination(prevIndex);
+      // Use simple centering instead of roulette for swipes
+      centerIndex(prevIndex);
+      centerPill(prevIndex);
     }
   };
 
-  // Handle destination selection and navigation to trip builder
+  // Handle destination selection - just collect data, no redirect
   const handleDestinationSelect = (itemId: string) => {
     const destination = CAROUSEL_TO_DESTINATION_MAP[itemId];
     if (destination) {
@@ -319,22 +323,13 @@ export default function Carousel({
         document.body.removeChild(indicator);
       }, 2000);
       
-      // Navigate to trip builder with selected destination
-      const targetElement = document.getElementById('trip-builder');
-      if (targetElement) {
-        // Scroll to trip builder section with selected destination
-        const url = new URL(window.location.href);
-        url.searchParams.set('destination', destination);
-        window.history.pushState({}, '', url.toString());
-        
-        // Add a small delay before scrolling for better UX
-        setTimeout(() => {
-          targetElement.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 500);
-      }
+      // Just update URL parameters without redirecting
+      const url = new URL(window.location.href);
+      url.searchParams.set('destination', destination);
+      window.history.pushState({}, '', url.toString());
+      
+      // Log the selection for debugging
+      console.log('Destination selected:', { itemId, destination, selectedItem });
     }
   };
 
@@ -686,9 +681,11 @@ export default function Carousel({
                   aria-controls={`${id}-slide-${i}`}
                   disabled={isRouletting}
                   className={`
-                    relative snap-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300
-                    backdrop-blur-sm min-w-[80px] text-center
+                    relative snap-center whitespace-nowrap rounded-full border text-sm font-medium transition-all duration-300
+                    backdrop-blur-sm text-center
                     hover:scale-105 active:scale-95 touch-manipulation
+                    px-4 py-2 md:px-4 md:py-2
+                    min-w-fit
                     ${isRouletting ? "opacity-75" : ""}
                     ${
                       i === rouletteTarget && isRouletting
@@ -698,6 +695,7 @@ export default function Carousel({
                         : "border-white/30 text-white/90 hover:bg-white/10 hover:border-white/50 shadow-lg shadow-black/25"
                     }
                   `}
+                  style={{ padding: '8px 18px' }}
                 >
                   <span className="inline-block translate-y-[0.5px] tracking-wide">
                     {p.title}
