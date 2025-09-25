@@ -60,17 +60,46 @@ function getDestinationId(destination: string): string {
   const normalized = destination.toLowerCase().trim();
 
   const mappings: Record<string, string> = {
-    "dubai, uae": "dubai-uae",
-    dubai: "dubai-uae",
-    "paris, france": "paris-france",
-    paris: "paris-france",
-    "bangkok, thailand": "bangkok-thailand",
-    bangkok: "bangkok-thailand",
-    singapore: "singapore-singapore",
+    // Direct mappings to match SQL destination_ids
+    "dubai": "dubai",
+    "dubai, uae": "dubai",
+    "thailand": "thailand", 
+    "bangkok": "thailand",
+    "bangkok, thailand": "thailand",
+    "london": "london",
+    "london, uk": "london",
+    "united states": "united-states",
+    "usa": "united-states",
+    "united-states": "united-states",
+    "bali": "bali",
+    "bali, indonesia": "bali", 
+    "switzerland": "switzerland",
+    "paris": "paris",
+    "paris, france": "paris",
+    "bhutan": "bhutan",
+    "maldives": "maldives",
+    "kerala": "kerala",
+    "kerala, india": "kerala",
+    "assam": "assam", 
+    "assam, india": "assam",
+    "himachal pradesh": "himachal",
+    "himachal": "himachal",
+    "meghalaya": "meghalaya",
+    "meghalaya, india": "meghalaya",
+    "mysore": "mysore",
+    "mysore, india": "mysore", 
+    "rajasthan": "rajasthan",
+    "rajasthan, india": "rajasthan",
+    "uttarakhand": "uttarakhand",
+    "uttarakhand, india": "uttarakhand",
+    "ladakh": "ladakh",
+    "ladakh, india": "ladakh"
   };
 
   if (mappings[normalized]) return mappings[normalized];
-  return slugify(destination);
+  
+  // For any unmapped destinations, just return lowercase with spaces replaced by hyphens
+  return destination.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
 // price formatter for numeric that might be string
