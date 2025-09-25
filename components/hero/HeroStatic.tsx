@@ -50,7 +50,7 @@ const CARDS: Card[] = [
 
 export default function HeroStatic() {
   return (
-    <div className="relative bg-gradient-to-b from-[#101212] to-[#08201D]">
+    <div className="relative bg-black">
       <section
         className="relative min-h-[100svh] mb-8 sm:mb-12 pt-16 sm:pt-24 lg:pt-48 pb-[240px] sm:pb-[280px] lg:pb-[20rem] overflow-hidden"
         aria-label="Hero"
