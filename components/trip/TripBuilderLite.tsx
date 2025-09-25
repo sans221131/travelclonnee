@@ -397,7 +397,8 @@ export default function TripBuilderLite() {
       case "fromLocation":
         return !!answers.from;
       case "destinationSeed":
-        return true; // user will click keep/change buttons
+        // User must either keep the seeded destination or select a new one
+        return !!answers.destination;
       case "destinationSelect":
         return !!answers.destination;
       case "dates":
@@ -476,6 +477,12 @@ export default function TripBuilderLite() {
       return;
     }
     if (current === "destinationSeed") {
+      // Instead of just returning, advance to the next step after destinationSeed
+      setIdx((i) => {
+        const ni = Math.min(i + 1, steps.length - 1);
+        setMaxVisited((v) => Math.max(v, ni));
+        return ni;
+      });
       return;
     }
     setIdx((i) => {
