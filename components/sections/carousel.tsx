@@ -357,15 +357,36 @@ export default function Carousel({
     const currentIndex = active;
     const totalItems = items.length;
 
-    // Calculate full circle + target position
-    const fullCircle = totalItems;
-    const extraRotations = Math.floor(Math.random() * 2) + 1; // 1-2 extra rotations
-    const totalSteps =
-      fullCircle * extraRotations +
-      ((targetIndex - currentIndex + totalItems) % totalItems);
+    // Calculate direct path to target (no looping/spinning)
+    let steps: number[] = [];
+    const distance = Math.abs(targetIndex - currentIndex);
+    
+    if (distance === 0) {
+      // Same position, just select it
+      setActive(targetIndex);
+      setIsRouletting(false);
+      setRouletteTarget(null);
+      const selectedItem = items[targetIndex];
+      if (selectedItem) {
+        handleDestinationSelect(selectedItem.id);
+      }
+      return;
+    }
+
+    // Create path to target
+    if (targetIndex > currentIndex) {
+      for (let i = currentIndex + 1; i <= targetIndex; i++) {
+        steps.push(i);
+      }
+    } else {
+      for (let i = currentIndex - 1; i >= targetIndex; i--) {
+        steps.push(i);
+      }
+    }
 
     let currentStep = 0;
-    const baseSpeed = 80; // Slightly slower for smoother effect
+    const baseSpeed = 60; // Base speed for animation
+    const totalSteps = steps.length;
 
     const rouletteStep = () => {
       if (currentStep >= totalSteps) {
@@ -374,13 +395,11 @@ export default function Carousel({
           centerIndex(targetIndex, 800);
           centerPill(targetIndex);
 
-          // Pointer functionality removed
-
           const tEnd = window.setTimeout(() => {
             setIsRouletting(false);
             setRouletteTarget(null);
             
-            // Auto-fill destination in trip builder when roulette completes
+            // Auto-fill destination in trip builder when animation completes
             const selectedItem = items[targetIndex];
             if (selectedItem) {
               handleDestinationSelect(selectedItem.id);
@@ -392,44 +411,35 @@ export default function Carousel({
         return;
       }
 
-      const nextIndex = (currentIndex + currentStep + 1) % totalItems;
+      const nextIndex = steps[currentStep];
 
-      // Enhanced realistic deceleration like real roulette
-      const progress = currentStep / totalSteps;
+      // Enhanced deceleration effect - last 3 steps get progressively slower
+      const remainingSteps = totalSteps - currentStep;
       let delay = baseSpeed;
 
-      if (progress < 0.5) {
-        // Fast spinning phase (50% of rotation)
+      if (remainingSteps > 3) {
+        // Normal speed until last 3 steps
         delay = baseSpeed;
-      } else if (progress < 0.7) {
-        // Start slowing down (20% of rotation)
-        const slowProgress = (progress - 0.5) / 0.2;
-        delay = baseSpeed + slowProgress * baseSpeed;
-      } else if (progress < 0.85) {
-        // Significant slowdown (15% of rotation)
-        const slowProgress = (progress - 0.7) / 0.15;
-        delay = baseSpeed * 2 + slowProgress * baseSpeed * 2;
-      } else if (progress < 0.95) {
-        // Major slowdown (10% of rotation)
-        const slowProgress = (progress - 0.85) / 0.1;
-        delay = baseSpeed * 4 + slowProgress * baseSpeed * 3;
-      } else {
-        // Final crawl (last 5% - very slow)
-        const slowProgress = (progress - 0.95) / 0.05;
-        delay = baseSpeed * 7 + slowProgress * baseSpeed * 5;
+      } else if (remainingSteps === 3) {
+        // Third to last step - start slowing
+        delay = baseSpeed * 2;
+      } else if (remainingSteps === 2) {
+        // Second to last step - slower
+        delay = baseSpeed * 4;
+      } else if (remainingSteps === 1) {
+        // Last step before destination - slowest
+        delay = baseSpeed * 8;
       }
 
-      // Add realistic physics variation
-      const variation = Math.random() * 0.2 - 0.1; // Reduced variation for smoother effect
+      // Add slight physics variation for natural feel
+      const variation = Math.random() * 0.15 - 0.075; // Reduced variation
       delay *= 1 + variation;
 
-      // Pointer functionality removed - no wobble needed
-
       setActive(nextIndex);
-      centerIndex(nextIndex, Math.min(400, delay * 2)); // Smoother centering
+      centerIndex(nextIndex, Math.min(300, delay * 1.5)); // Smoother centering
 
       currentStep++;
-      const tid = window.setTimeout(rouletteStep, Math.max(100, delay));
+      const tid = window.setTimeout(rouletteStep, Math.max(80, delay));
       timeoutsRef.current.push(tid);
     };
 
