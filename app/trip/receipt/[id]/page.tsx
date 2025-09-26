@@ -465,10 +465,10 @@ export default async function ReceiptPage(props: {
 
                     <div className="mt-3 flex items-center justify-between">
                       <div className="text-sm text-white">
-                        {priceLabel(a.price, a.currency)}
                         {a.price != null ? (
-                          <span className="ml-1 text-xs text-zinc-400">from</span>
+                          <span className="text-xs text-zinc-400 mr-1">from</span>
                         ) : null}
+                        {priceLabel(a.price, a.currency)}
                       </div>
 
                       <div className="flex items-center gap-2">

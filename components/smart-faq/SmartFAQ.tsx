@@ -58,7 +58,7 @@ const FAQS: FAQItem[] = [
       "Use the Have an Invoice section and enter your reference number. You’ll be redirected to our payment gateway.",
     tags: ["payments", "invoices"],
     synonyms: ["pay bill", "payment link", "settle invoice"],
-    cta: { label: "Pay invoice", href: "#invoice-pay" },
+    cta: { label: "Pay invoice", href: "#invoice" },
   },
 ];
 

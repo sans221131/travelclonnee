@@ -28,6 +28,7 @@ type Answers = {
   children?: number;
 
   passengerName?: string;
+  passengerSurname?: string;
   phoneCountryCode?: string; // "+"
   phoneNumber?: string;
   email?: string;
@@ -356,6 +357,7 @@ export default function TripBuilderLite() {
         answers.startDate &&
         answers.endDate &&
         answers.passengerName?.trim() &&
+        answers.passengerSurname?.trim() &&
         (answers.phoneCountryCode || "").trim() &&
         (answers.phoneNumber || "").trim() &&
         (answers.email || "").trim() &&
@@ -427,11 +429,16 @@ export default function TripBuilderLite() {
                (adults + children) <= 25;
       case "passengerName":
         const name = (answers.passengerName || "").trim();
-        // Name: 2-50 characters, letters, spaces, hyphens, apostrophes only
+        const surname = (answers.passengerSurname || "").trim();
+        // Name and surname: 2-50 characters each, letters, spaces, hyphens, apostrophes only
         return name.length >= 2 && 
                name.length <= 50 &&
+               surname.length >= 1 &&
+               surname.length <= 50 &&
                /^[a-zA-Z\s\-'\.]+$/.test(name) &&
-               !/^\s|\s$/.test(name);
+               /^[a-zA-Z\s\-'\.]+$/.test(surname) &&
+               !/^\s|\s$/.test(name) &&
+               !/^\s|\s$/.test(surname);
       case "phoneNumber":
         const countryCode = (answers.phoneCountryCode || "").trim();
         const phoneNumber = (answers.phoneNumber || "").replace(/\s+/g, "");
@@ -575,6 +582,7 @@ export default function TripBuilderLite() {
       flightClass: answers.flightClass!,
       visaStatus: answers.visaStatus!,
       passengerName: answers.passengerName!,
+      passengerSurname: answers.passengerSurname!,
       email: answers.email!,
       phoneCountryCode: answers.phoneCountryCode!,
       phoneNumber: answers.phoneNumber!,
@@ -655,7 +663,7 @@ export default function TripBuilderLite() {
           <SectionHeader
             id="tripbuilder-heading"
             title="Trip Builder Lite"
-            subtitle="Answer a few quick questions to get a tailored quote"
+
             align="center"
             tone="light"
           />
@@ -694,7 +702,6 @@ export default function TripBuilderLite() {
                   {current === "fromLocation" && (
                     <StepShell
                       title="Where are you traveling from?"
-                      subtitle="Major cities with airports"
                     >
 
 
@@ -734,7 +741,6 @@ export default function TripBuilderLite() {
                     answers.seededDestination && (
                       <StepShell
                         title={`Keep ${answers.seededDestination} as your destination?`}
-                        subtitle="You can change it if needed"
                       >
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                           <button
@@ -797,7 +803,7 @@ export default function TripBuilderLite() {
                   {current === "dates" && (
                     <StepShell
                       title="When do you plan to travel?"
-                      subtitle="Select your start and end dates"
+
                     >
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                         <Labeled field="start-date" label="Start date">
@@ -874,7 +880,7 @@ export default function TripBuilderLite() {
                   {current === "travellers" && (
                     <StepShell
                       title="How many travelers?"
-                      subtitle="At least one adult is required"
+
                     >
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                         <Labeled field="adults" label="Adults">
@@ -913,30 +919,56 @@ export default function TripBuilderLite() {
 
                   {current === "passengerName" && (
                     <StepShell title="What's your name?">
-                      <Labeled field="pname" label="">
-                        <input
-                          id="pname"
-                          type="text"
-                          placeholder="Enter your full name"
-                          inputMode="text"
-                          autoComplete="name"
-                          maxLength={50}
-                          minLength={2}
-                          pattern="[a-zA-Z\s\-'\.]{2,50}"
-                          value={answers.passengerName ?? ""}
-                          onChange={(e) => {
-                            const newName = e.target.value;
-                            // Allow only letters, spaces, hyphens, apostrophes, periods
-                            if (/^[a-zA-Z\s\-'\.]*$/.test(newName)) {
-                              setAnswers((a) => ({
-                                ...a,
-                                passengerName: newName,
-                              }));
-                            }
-                          }}
-                          className="input"
-                        />
-                      </Labeled>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                        <Labeled field="pname" label="First Name">
+                          <input
+                            id="pname"
+                            type="text"
+                            placeholder="Enter your first name"
+                            inputMode="text"
+                            autoComplete="given-name"
+                            maxLength={50}
+                            minLength={2}
+                            pattern="[a-zA-Z\s\-'\.]{2,50}"
+                            value={answers.passengerName ?? ""}
+                            onChange={(e) => {
+                              const newName = e.target.value;
+                              // Allow only letters, spaces, hyphens, apostrophes, periods
+                              if (/^[a-zA-Z\s\-'\.]*$/.test(newName)) {
+                                setAnswers((a) => ({
+                                  ...a,
+                                  passengerName: newName,
+                                }));
+                              }
+                            }}
+                            className="input"
+                          />
+                        </Labeled>
+                        <Labeled field="psurname" label="Surname">
+                          <input
+                            id="psurname"
+                            type="text"
+                            placeholder="Enter your surname"
+                            inputMode="text"
+                            autoComplete="family-name"
+                            maxLength={50}
+                            minLength={1}
+                            pattern="[a-zA-Z\s\-'\.]{1,50}"
+                            value={answers.passengerSurname ?? ""}
+                            onChange={(e) => {
+                              const newSurname = e.target.value;
+                              // Allow only letters, spaces, hyphens, apostrophes, periods
+                              if (/^[a-zA-Z\s\-'\.]*$/.test(newSurname)) {
+                                setAnswers((a) => ({
+                                  ...a,
+                                  passengerSurname: newSurname,
+                                }));
+                              }
+                            }}
+                            className="input"
+                          />
+                        </Labeled>
+                      </div>
                     </StepShell>
                   )}
 
@@ -1105,7 +1137,13 @@ export default function TripBuilderLite() {
                               def={String(answers.children ?? 0)}
                             />
                           </div>
-                          <Row term="Name" def={answers.passengerName} />
+                          <Row 
+                            term="Name" 
+                            def={answers.passengerName && answers.passengerSurname 
+                              ? `${answers.passengerName} ${answers.passengerSurname.charAt(0).toUpperCase()}.`
+                              : answers.passengerName
+                            } 
+                          />
                           <Row
                             term="Phone"
                             def={`${answers.phoneCountryCode ?? ""} ${

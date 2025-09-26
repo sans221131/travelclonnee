@@ -223,6 +223,7 @@ export default function InvoiceQuickPay() {
 
   return (
     <section
+      id="invoice"
       aria-label="Have an invoice"
       className="relative overflow-x-hidden bg-zinc-950 text-zinc-100"
     >
