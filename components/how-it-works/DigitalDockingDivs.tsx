@@ -53,7 +53,6 @@ export default function DigitalDockingDivs({
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const indicatorRefs = useRef<(HTMLDivElement | null)[]>([]);
   const pipRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const trackGlowRef = useRef<HTMLDivElement | null>(null);
@@ -76,7 +75,6 @@ export default function DigitalDockingDivs({
     const cap = steps.length;
     if (cardRefs.current.length > cap) cardRefs.current.length = cap;
     if (textRefs.current.length > cap) textRefs.current.length = cap;
-    if (indicatorRefs.current.length > cap) indicatorRefs.current.length = cap;
   }, [steps.length]);
 
   // animations
@@ -86,18 +84,11 @@ export default function DigitalDockingDivs({
     const ctx = gsap.context(() => {
       // step card entrances
       cardRefs.current.forEach((card, index) => {
-        const indicator = indicatorRefs.current[index];
         const text = textRefs.current[index];
-        if (!card || !indicator || !text) return;
+        if (!card || !text) return;
 
         gsap.set(card, { opacity: 0.2, y: 48 });
         gsap.set(text, { opacity: 0, y: 20 });
-        gsap.set(indicator, {
-          opacity: 0.45,
-          scale: 0.65,
-          filter: "brightness(0.6)",
-          boxShadow: "0 0 0 rgba(0,0,0,0)",
-        });
 
         gsap
           .timeline({
@@ -109,14 +100,7 @@ export default function DigitalDockingDivs({
               scrub: true,
             },
           })
-          .to(indicator, {
-            opacity: 1,
-            scale: 1,
-            filter: "brightness(1.35)",
-            boxShadow: "0 0 2.5rem rgba(255,255,255,0.55)",
-            duration: 0.6,
-          })
-          .to(card, { opacity: 1, y: 0, duration: 0.6 }, "<0.1")
+          .to(card, { opacity: 1, y: 0, duration: 0.6 })
           .to(text, { opacity: 1, y: 0, duration: 0.5 }, "-=0.2");
       });
 
@@ -316,19 +300,6 @@ export default function DigitalDockingDivs({
                         : "md:mr-auto md:pr-16"
                     }`}
                   >
-                    {/* small indicator near each card */}
-                    <div
-                      ref={(el) => {
-                        indicatorRefs.current[index] = el;
-                      }}
-                      className={`absolute top-3 ${
-                        alignRight
-                          ? "-right-3 md:-right-6"
-                          : "-left-3 md:-left-6"
-                      } h-3 w-3 rounded-full border border-white/30 bg-white/20 shadow-[0_0_0_rgba(0,0,0,0)] md:top-8`}
-                      aria-hidden
-                    />
-
                     <div
                       ref={(el) => {
                         cardRefs.current[index] = el;

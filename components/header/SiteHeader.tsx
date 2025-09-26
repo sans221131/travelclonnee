@@ -116,7 +116,7 @@ export default function SiteHeader() {
                     onClick={closeMenu}
                     className="text-base text-white/90 hover:text-white transition-colors py-2"
                   >
-                    Solutions
+                   Destinations
                   </Link>
                   <Link
                     href="#trip-builder"

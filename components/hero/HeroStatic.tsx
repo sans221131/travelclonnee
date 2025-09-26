@@ -90,13 +90,13 @@ export default function HeroStatic() {
           </div>
         </div>
 
-        {/* Mobile grid with real videos */}
+               {/* Mobile grid with real videos + labels */}
         <div className="lg:hidden absolute inset-x-0 bottom-8 z-10 px-4">
           <div className="grid grid-cols-2 gap-3">
             {CARDS.map((c) => (
               <div
                 key={c.id}
-                className="rounded-2xl overflow-hidden ring-1 ring-white/10 bg-white/5"
+                className="relative rounded-2xl overflow-hidden ring-1 ring-white/10 bg-white/5"
               >
                 <video
                   className="h-36 sm:h-40 w-full object-cover"
@@ -108,6 +108,19 @@ export default function HeroStatic() {
                   preload="metadata"
                   loop
                   aria-label={`${c.alt} video`}
+                />
+                {/* Label overlay */}
+                <span
+                  className="pointer-events-none absolute left-2.5 bottom-2.5 z-10 px-2.5 py-1 rounded-md
+                             bg-black/55 ring-1 ring-white/10 text-white text-xs sm:text-sm font-semibold
+                             backdrop-blur-[1px] shadow-[0_1px_8px_rgba(0,0,0,0.35)]"
+                >
+                  {c.label}
+                </span>
+                {/* soft gradient for readability on bright frames */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent"
                 />
               </div>
             ))}

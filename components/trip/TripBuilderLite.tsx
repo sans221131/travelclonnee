@@ -368,16 +368,10 @@ export default function TripBuilderLite() {
     );
   }, [answers]);
 
-  // keyboard: arrows for nav, Enter to proceed/submit
+  // keyboard: Enter to proceed/submit (arrow navigation disabled)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        goNext();
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        goPrev();
-      } else if (e.key === "Enter") {
+      if (e.key === "Enter") {
         if (current === "summary") {
           if (hasAll) {
             e.preventDefault();
@@ -634,8 +628,13 @@ export default function TripBuilderLite() {
     if (touchStartX.current == null || touchEndX.current == null) return;
     const dx = touchEndX.current - touchStartX.current;
     if (Math.abs(dx) > 48) {
-      if (dx > 0) goPrev();
-      else if (canProceed()) goNext();
+      if (dx > 0) {
+        // Swipe right -> go back (but not from first step)
+        if (idx > 0) goPrev();
+      } else if (canProceed()) {
+        // Swipe left -> go forward (but not from last step or if can't proceed)
+        if (idx < steps.length - 1) goNext();
+      }
     }
   }
 
