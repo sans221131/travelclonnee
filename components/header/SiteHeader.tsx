@@ -7,13 +7,8 @@ import { useState } from "react";
 export default function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-  };
+  const toggleMenu = () => setIsMenuOpen((v) => !v);
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -23,21 +18,25 @@ export default function SiteHeader() {
                      rounded-b-xl bg-black/30 backdrop-blur supports-[backdrop-filter]:bg-black/30
                      ring-1 ring-white/10 px-3 sm:px-4"
         >
+          {/* Logo + Brand */}
           <div className="flex-shrink-0">
-            <Link
-              href="/"
-              aria-label="Home"
-              className="flex items-center gap-2"
-            >
+            <Link href="/" aria-label="Home" className="flex items-center gap-2">
+              {/* Logo mark */}
               <span className="inline-block h-8 w-8 rounded bg-white/90" />
+              {/* Mobile brand: visible only below sm */}
+              <span className="sm:hidden text-white/90 font-semibold tracking-wide text-sm whitespace-nowrap">
+                LeafwayTravels
+              </span>
+              {/* Desktop/Tablet brand: visible from sm and up */}
               <span className="hidden sm:inline text-white/90 font-semibold tracking-wide">
-                LeafWay 
+                LeafWay
               </span>
             </Link>
           </div>
 
-          <div className="flex-1"></div>
+          <div className="flex-1" />
 
+          {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8">
             <Link
               href="#destinations"
@@ -65,6 +64,7 @@ export default function SiteHeader() {
             </Link>
           </nav>
 
+          {/* Mobile menu button */}
           <button
             type="button"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -72,12 +72,7 @@ export default function SiteHeader() {
             className="inline-flex p-2 ml-1 text-white rounded-md sm:ml-4 lg:hidden hover:bg-white/10 focus:bg-white/10 transition-colors"
           >
             {isMenuOpen ? (
-              <svg
-                className="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   stroke="currentColor"
                   strokeWidth="2"
@@ -87,12 +82,7 @@ export default function SiteHeader() {
                 />
               </svg>
             ) : (
-              <svg
-                className="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   stroke="currentColor"
                   strokeWidth="2"
@@ -116,7 +106,7 @@ export default function SiteHeader() {
                     onClick={closeMenu}
                     className="text-base text-white/90 hover:text-white transition-colors py-2"
                   >
-                   Destinations
+                    Destinations
                   </Link>
                   <Link
                     href="#trip-builder"

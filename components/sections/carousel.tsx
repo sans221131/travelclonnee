@@ -52,6 +52,12 @@ export default function Carousel({
   whipMs = 720,
   respectReducedMotion = true,
 }: CarouselProps) {
+  // selection travel: ~60% slower and smoother
+  const TRAVEL_SLOWDOWN = 1.6; // 60% slower
+  const MS_PER_CARD = 280;
+  const TRAVEL_MIN = 500;
+  const TRAVEL_MAX = 2200;
+
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
   const centersRef = useRef<number[]>([]);
@@ -61,7 +67,7 @@ export default function Carousel({
   const [dramatic, setDramatic] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState<Set<string>>(new Set());
 
-  // roulette state
+  // roulette state (kept for optional use)
   const [isRouletting, setIsRouletting] = useState(false);
   const [rouletteTarget, setRouletteTarget] = useState<number | null>(null);
   const timeoutsRef = useRef<number[]>([]);
@@ -71,7 +77,7 @@ export default function Carousel({
   const pillBtnRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [pillsH, setPillsH] = useState(0);
 
-  // Breakpoints for tighter padding across devices
+  // Breakpoints
   const [bp, setBp] = useState<"mobile" | "tablet" | "desktop">("mobile");
   useEffect(() => {
     const compute = () => {
@@ -140,7 +146,7 @@ export default function Carousel({
     measureAll(); // re-measure when images fade in
   }, [imagesLoaded.size]);
 
-  /* ---------- Scroll brain (no per-frame transition writes) ---------- */
+  /* ---------- Scroll brain ---------- */
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root) return;
@@ -209,6 +215,9 @@ export default function Carousel({
   };
 
   /* ---------- Programmatic scroll ---------- */
+  const easeInOutCubic = (t: number) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
   const animateScrollTo = (left: number, ms: number) => {
     const root = scrollerRef.current;
     if (!root) return;
@@ -223,8 +232,6 @@ export default function Carousel({
     const change = left - start;
     const startTime = performance.now();
     const duration = Math.max(1, ms);
-    const easeInOutCubic = (t: number) =>
-      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     const step = (now: number) => {
       const t = Math.min(1, (now - startTime) / duration);
@@ -237,13 +244,36 @@ export default function Carousel({
     requestAnimationFrame(step);
   };
 
-  const centerIndex = (idx: number, ms = 500) => {
+  const centerIndex = (idx: number, ms = 600) => {
     const root = scrollerRef.current;
     const centers = centersRef.current;
     if (!root || !centers.length) return;
     const clamped = Math.max(0, Math.min(centers.length - 1, idx));
     const targetLeft = centers[clamped] - root.clientWidth / 2;
     animateScrollTo(targetLeft, prefersReduced ? 0 : ms);
+  };
+
+  /* ---------- Smooth selection travel (60% slower) ---------- */
+  const travelToIndex = (targetIndex: number) => {
+    const centers = centersRef.current;
+    const root = scrollerRef.current;
+    if (!root || !centers.length) return;
+
+    const clamped = Math.max(0, Math.min(centers.length - 1, targetIndex));
+    const distance = Math.abs(clamped - active);
+    if (distance === 0) return;
+
+    const msRaw = distance * MS_PER_CARD * TRAVEL_SLOWDOWN;
+    const ms = Math.max(TRAVEL_MIN, Math.min(TRAVEL_MAX, Math.round(msRaw)));
+
+    const left = centers[clamped] - root.clientWidth / 2;
+    setIsRouletting(false);
+    setRouletteTarget(null);
+    setDramatic(false);
+
+    setActive(clamped);
+    animateScrollTo(left, prefersReduced ? 0 : ms);
+    centerPill(clamped);
   };
 
   const centerPill = (i: number) => {
@@ -254,6 +284,7 @@ export default function Carousel({
     bar.scrollTo({ left, behavior: prefersReduced ? "auto" : "smooth" });
   };
 
+  // Legacy whip (kept if you still call it elsewhere)
   const whipTo = (idx: number) => {
     const root = scrollerRef.current;
     const centers = centersRef.current;
@@ -265,16 +296,18 @@ export default function Carousel({
     const dir = baseLeft > root.scrollLeft ? 1 : -1;
     const overshoot = prefersReduced ? 0 : overshootPx * dir;
 
+    const wm = Math.round(whipMs * 1.6);
+
     setDramatic(true);
-    animateScrollTo(baseLeft + overshoot, Math.round(whipMs * 0.6));
+    animateScrollTo(baseLeft + overshoot, Math.round(wm * 0.6));
     const t1 = window.setTimeout(() => {
-      animateScrollTo(baseLeft, Math.round(whipMs * 0.4));
+      animateScrollTo(baseLeft, Math.round(wm * 0.4));
       const t2 = window.setTimeout(
         () => setDramatic(false),
-        Math.round(whipMs * 0.45)
+        Math.round(wm * 0.45)
       );
       timeoutsRef.current.push(t2);
-    }, Math.round(whipMs * 0.6));
+    }, Math.round(wm * 0.6));
     timeoutsRef.current.push(t1);
 
     centerPill(clamped);
@@ -313,6 +346,7 @@ export default function Carousel({
     timeoutsRef.current = [];
   };
 
+  // Kept for completeness; pills/keys use travelToIndex now
   const rouletteToDestination = (targetIndex: number) => {
     if (isRouletting) return;
     if (targetIndex < 0 || targetIndex >= items.length) return;
@@ -342,14 +376,14 @@ export default function Carousel({
     }
 
     let currentStep = 0;
-    const baseSpeed = 60; // ms
+    const baseSpeed = Math.round(60 * 1.6);
     const totalSteps = steps.length;
 
     const rouletteStep = () => {
       if (currentStep >= totalSteps) {
         const tFin = window.setTimeout(() => {
           setActive(targetIndex);
-          centerIndex(targetIndex, 800);
+          centerIndex(targetIndex, Math.round(800 * 1.6));
           centerPill(targetIndex);
 
           const tEnd = window.setTimeout(() => {
@@ -357,7 +391,7 @@ export default function Carousel({
             setRouletteTarget(null);
             const selectedItem = items[targetIndex];
             if (selectedItem) handleDestinationSelect(selectedItem.id);
-          }, 800);
+          }, Math.round(800 * 1.6));
           timeoutsRef.current.push(tEnd);
         }, 300);
         timeoutsRef.current.push(tFin);
@@ -376,7 +410,7 @@ export default function Carousel({
       delay *= 1 + variation;
 
       setActive(nextIndex);
-      centerIndex(nextIndex, Math.min(300, delay * 1.5));
+      centerIndex(nextIndex, Math.min(300 * 1.6, delay * 1.5));
       currentStep++;
       const tid = window.setTimeout(rouletteStep, Math.max(80, delay));
       timeoutsRef.current.push(tid);
@@ -386,24 +420,22 @@ export default function Carousel({
   };
 
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (isRouletting) return;
-
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
-      rouletteToDestination(Math.min(items.length - 1, active + 1));
+      travelToIndex(Math.min(items.length - 1, active + 1));
     } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
       e.preventDefault();
-      rouletteToDestination(Math.max(0, active - 1));
+      travelToIndex(Math.max(0, active - 1));
     } else if (e.key === "Home") {
       e.preventDefault();
-      rouletteToDestination(0);
+      travelToIndex(0);
     } else if (e.key === "End") {
       e.preventDefault();
-      rouletteToDestination(items.length - 1);
+      travelToIndex(items.length - 1);
     } else if (e.key >= "1" && e.key <= "9") {
       e.preventDefault();
       const index = parseInt(e.key) - 1;
-      if (index < items.length) rouletteToDestination(index);
+      if (index < items.length) travelToIndex(index);
     }
   };
 
@@ -411,16 +443,17 @@ export default function Carousel({
   const sideExtra = bp === "desktop" ? 16 : bp === "tablet" ? 12 : 8;
   const railTopClass =
     "absolute left-1 right-1 sm:left-2 sm:right-2 lg:left-6 lg:right-6 " +
-    "top-[48px] sm:top-[64px] md:top-[80px]"; // tighter on all
+    "top-[48px] sm:top-[64px] md:top-[80px]";
 
   return (
     <section
       id={id}
       aria-label={title}
-      className="relative w-full h-[100svh] min-h-[100svh] bg-black text-white"
-      style={{ height: "100svh" }}
+      // Mobile 80svh, tablet/desktop 100svh
+      className="relative w-full h-[80svh] min-h-[80svh] sm:h-[100svh] sm:min-h-[100svh] bg-black text-white"
+      style={{ height: "80svh" }}
     >
-      {/* Header (tighter top padding) */}
+      {/* Header with space between title and subtitle */}
       <div className="absolute top-0 inset-x-0 z-10 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8 pt-2.5 sm:pt-4 lg:pt-6">
           <div className="text-center">
@@ -428,18 +461,16 @@ export default function Carousel({
               {title}
             </h2>
             <p
-              className="text-sm sm:text-base md:text-lg text-white/80 mt-1 sm:mt-2 drop-shadow-md"
+              className="text-sm sm:text-base md:text-lg text-white/80 mt-3 sm:mt-4 md:mt-5 drop-shadow-md"
               aria-live="polite"
             >
-              {isRouletting
-                ? "🎲 Selecting destination..."
-                : "Discover your next adventure"}
+              Discover your next adventure
             </p>
           </div>
         </div>
       </div>
 
-      {/* Carousel rail (tightened paddings for all breakpoints) */}
+      {/* Carousel rail */}
       <div
         ref={scrollerRef}
         className={`${railTopClass}
@@ -463,7 +494,7 @@ export default function Carousel({
             ref={(el) => {
               cardRefs.current[i] = el;
             }}
-            className="relative snap-center shrink-0 transition-all duration-500 ease-out will-change-transform touch-manipulation"
+            className="relative snap-center shrink-0 transition-all duration-700 ease-out will-change-transform touch-manipulation"
             style={{
               width:
                 bp === "desktop"
@@ -477,7 +508,7 @@ export default function Carousel({
             aria-label={`${p.title} (${i + 1} of ${items.length})`}
           >
             <div
-              className={`relative aspect-[3/4] sm:aspect-[4/5] md:aspect-[16/10] w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/40 group transition-all duration-700 ease-out ${
+              className={`relative aspect-[3/4] sm:aspect-[4/5] md:aspect-[16/10] w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/40 group transition-all duration-1000 ease-out ${
                 i === active
                   ? "ring-2 ring-white/90 ring-offset-1 ring-offset-transparent scale-100 sm:scale-105"
                   : "ring-1 ring-white/20 opacity-75 scale-95 sm:scale-98"
@@ -527,7 +558,7 @@ export default function Carousel({
                 alt={p.alt || p.title}
                 fill
                 sizes="(min-width: 1024px) 50vw, (min-width: 640px) 60vw, 80vw"
-                className={`object-cover object-center transition-all duration-700 ease-out group-hover:scale-105 ${
+                className={`object-cover object-center transition-all duration-1000 ease-out group-hover:scale-105 ${
                   imagesLoaded.has(p.id) ? "opacity-100" : "opacity-0"
                 }`}
                 priority={i === 0}
@@ -593,11 +624,7 @@ export default function Carousel({
                     pillBtnRefs.current[i] = el;
                   }}
                   onClick={() => {
-                    if (i === active && !isRouletting) {
-                      handleDestinationSelect(p.id);
-                    } else {
-                      rouletteToDestination(i);
-                    }
+                    travelToIndex(i); // smooth travel
                   }}
                   role="tab"
                   aria-selected={i === active}
