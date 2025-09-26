@@ -6,10 +6,13 @@ import { eq } from "drizzle-orm";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const { status } = await request.json();
+    // support both Promise and plain object for params
+    const paramsResolved = await (context.params as any);
+    const { id } = paramsResolved;
     
     // Validate status
     const validStatuses = ["new", "contacted", "quoted", "closed", "archived"];
@@ -27,7 +30,7 @@ export async function PATCH(
         status,
         updatedAt: new Date()
       })
-      .where(eq(tripRequests.id, params.id))
+  .where(eq(tripRequests.id, id))
       .returning();
 
     if (updatedTrip.length === 0) {
