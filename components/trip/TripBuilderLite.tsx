@@ -1205,7 +1205,7 @@ export default function TripBuilderLite() {
             rgba(255, 255, 255, 0.06)
           );
           color: white;
-          padding: 0.65rem 1.1rem;
+          padding: 0.6rem 1rem;
           font-size: 16px; /* Prevents zoom on iOS */
           backdrop-filter: blur(6px);
           font-weight: 500;
@@ -1215,7 +1215,7 @@ export default function TripBuilderLite() {
           border: 1px solid rgba(255, 255, 255, 0.14);
           background: rgba(255, 255, 255, 0.06);
           color: white;
-          padding: 0.65rem 1.1rem;
+          padding: 0.6rem 1rem;
           font-size: 16px; /* Prevents zoom on iOS */
           backdrop-filter: blur(6px);
           font-weight: 500;
@@ -1239,16 +1239,49 @@ export default function TripBuilderLite() {
           }
         }
 
+        /* Responsive button and input adjustments */
         @media (max-width: 640px) {
           .input {
             font-size: 16px;
-            padding: 0.75rem 0.9rem;
+            padding: 0.7rem 0.85rem;
           }
           .btn-primary,
           .btn-secondary {
             font-size: 14px;
-            padding: 0.6rem 1rem;
+            padding: 0.55rem 0.9rem;
             font-weight: 600;
+          }
+        }
+        
+        @media (min-width: 641px) and (max-width: 768px) {
+          .btn-primary,
+          .btn-secondary {
+            padding: 0.65rem 1.05rem;
+            font-size: 15px;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .btn-primary,
+          .btn-secondary {
+            padding: 0.8rem 1.3rem;
+            font-size: 16px;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .btn-primary,
+          .btn-secondary {
+            padding: 0.8rem 1.3rem;
+            font-size: 16px;
+          }
+        }
+        
+        @media (min-width: 1280px) {
+          .btn-primary,
+          .btn-secondary {
+            padding: 0.85rem 1.4rem;
+            font-size: 17px;
           }
         }
 
@@ -1372,18 +1405,18 @@ function StepShell(props: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2.5 sm:gap-3 md:gap-5">
-      <div>
-        <h3 className="text-2xl font-extrabold text-white leading-tight sm:text-2xl md:text-3xl lg:text-3xl tracking-tight">
+    <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-4 xl:gap-5">
+      <div className="pb-1 sm:pb-2 lg:pb-2 xl:pb-2">
+        <h3 className="text-xl font-extrabold text-white leading-tight sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl tracking-tight">
           {props.title}
         </h3>
         {props.subtitle && (
-          <p className="mt-1.5 text-xs text-zinc-400 sm:text-sm">
+          <p className="mt-1 text-xs text-zinc-400 sm:mt-1.5 sm:text-sm md:text-base lg:text-base xl:text-lg lg:mt-1.5 xl:mt-2">
             {props.subtitle}
           </p>
         )}
       </div>
-      <div className="mt-3 sm:mt-4">{props.children}</div>
+      <div className="mt-2 sm:mt-3 md:mt-4 lg:mt-4 xl:mt-5">{props.children}</div>
     </div>
   );
 }
