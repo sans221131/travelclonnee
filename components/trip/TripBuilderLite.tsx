@@ -596,6 +596,28 @@ export default function TripBuilderLite() {
           ? (json as { id?: string }).id ?? null
           : null;
 
+      // Associate any selected activities from cart with this trip
+      if (createdId && typeof window !== 'undefined') {
+        const selectedActivityIds = localStorage.getItem('selectedActivities');
+        if (selectedActivityIds) {
+          try {
+            const activityIds = JSON.parse(selectedActivityIds);
+            for (const activityId of activityIds) {
+              await fetch(`/api/trip-requests/${createdId}/activities`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ activityId })
+              });
+            }
+            // Clear the stored activities after successful association
+            localStorage.removeItem('selectedActivities');
+            console.log('Successfully associated', activityIds.length, 'activities with trip');
+          } catch (error) {
+            console.error('Error associating activities:', error);
+          }
+        }
+      }
+
       setSubmitting("saved");
 
       const params = new URLSearchParams();

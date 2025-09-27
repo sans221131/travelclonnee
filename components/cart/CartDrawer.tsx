@@ -23,52 +23,14 @@ export default function CartDrawer() {
     setShowCheckout(true);
     setCountdown(5);
     
-    // Save activities to database
-    try {
-      // Create a basic trip request with minimal data
-      const tripRequestData = {
-        origin: 'User Selected Location', // This could be enhanced to get from form data
-        destination: activities[0]?.destinationId || 'Multiple Destinations',
-        nationality: 'To be determined',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
-        adults: 2, // Default values
-        airlinePreference: 'No preference',
-        hotelPreference: 'No preference',
-        flightClass: 'economy',
-        visaStatus: 'not-required',
-        passengerName: 'Customer',
-        email: 'customer@example.com', // This should be collected from user
-        phoneCountryCode: '+1',
-        phoneNumber: '1234567890'
-      };
-
-      // Create trip request
-      const tripResponse = await fetch('/api/trip-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tripRequestData)
-      });
-
-      if (!tripResponse.ok) {
-        throw new Error('Failed to create trip request');
-      }
-
-      const tripRequest = await tripResponse.json();
-      
-      // Add each activity to the trip request
-      for (const activity of activities) {
-        await fetch(`/api/trip-requests/${tripRequest.id}/activities`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ activityId: activity.id })
-        });
-      }
-
-      console.log('Trip request created successfully:', tripRequest.id);
-    } catch (error) {
-      console.error('Error saving to database:', error);
-      // Continue with the checkout flow even if database save fails
+    // Note: Removed automatic trip creation that was causing duplicate entries
+    // Activities are now stored in localStorage and will be associated with the trip
+    // when the user completes the proper trip builder form with real customer details
+    console.log('Activities confirmed:', activities.length, 'activities selected');
+    
+    // Store selected activities in localStorage for later association with the actual trip
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedActivities', JSON.stringify(activities.map(a => a.id)));
     }
   };
 

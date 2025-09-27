@@ -164,3 +164,59 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<Params> }
+) {
+  try {
+    const { id: tripRequestId } = await context.params;
+    const body = await req.json().catch(() => ({}));
+    const activityId: string | undefined = body?.activityId;
+
+    console.log("DELETE /api/trip-requests/[id]/activities", { tripRequestId, activityId });
+
+    if (!tripRequestId || !activityId) {
+      return NextResponse.json(
+        { error: "tripRequestId or activityId missing" },
+        { status: 400 }
+      );
+    }
+
+    // Remove the trip-activity association
+    const deleted = await db
+      .delete(tripRequestActivities)
+      .where(
+        and(
+          eq(tripRequestActivities.tripRequestId, tripRequestId),
+          eq(tripRequestActivities.activityId, activityId)
+        )
+      )
+      .returning({ id: tripRequestActivities.id });
+
+    if (deleted.length === 0) {
+      return NextResponse.json(
+        { error: "Activity association not found" },
+        { status: 404 }
+      );
+    }
+
+    console.log("Successfully removed activity from trip:", { 
+      associationId: deleted[0].id, 
+      tripRequestId, 
+      activityId 
+    });
+
+    return NextResponse.json({ 
+      ok: true, 
+      message: "Activity removed from trip successfully"
+    });
+
+  } catch (err) {
+    console.error("DELETE /api/trip-requests/[id]/activities failed:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
