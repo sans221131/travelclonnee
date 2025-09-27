@@ -28,7 +28,6 @@ const statusFlow: Record<TripStatus, TripStatus[]> = {
 
 export default function StatusActions({ tripId, currentStatus, onStatusUpdate }: StatusActionsProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showAllStatuses, setShowAllStatuses] = useState(false);
 
   const updateStatus = async (newStatus: TripStatus) => {
     if (isUpdating) return;
@@ -56,7 +55,6 @@ export default function StatusActions({ tripId, currentStatus, onStatusUpdate }:
     }
   };
 
-  const nextStatuses = statusFlow[currentStatus] || [];
   const allStatuses = Object.keys(statusConfig) as TripStatus[];
 
   return (
@@ -73,65 +71,29 @@ export default function StatusActions({ tripId, currentStatus, onStatusUpdate }:
         </span>
       </div>
 
-      {/* Quick Actions */}
-      {nextStatuses.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-gray-500 text-center">Quick Actions:</p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {nextStatuses.map((status) => (
+      {/* All Status Options */}
+      <div className="space-y-2 border-t border-gray-200 pt-3">
+        <p className="text-xs text-gray-500 text-center">Status Options:</p>
+        <div className="grid grid-cols-2 gap-2">
+          {allStatuses
+            .filter(status => status !== currentStatus)
+            .map((status) => (
               <button
                 key={status}
                 onClick={() => updateStatus(status)}
                 disabled={isUpdating}
-                className={`px-3 py-1 text-xs rounded-full font-medium transition-colors disabled:opacity-50
-                  ${status === 'contacted' ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200' :
+                className={`px-2 py-1 text-xs rounded font-medium transition-colors disabled:opacity-50
+                  ${status === 'new' ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200' :
+                    status === 'contacted' ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200' :
                     status === 'quoted' ? 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' :
                     status === 'closed' ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200' :
-                    status === 'archived' ? 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' :
-                    'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'}`}
+                    'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
               >
                 {statusConfig[status as TripStatus].icon} {statusConfig[status as TripStatus].label}
               </button>
             ))}
-          </div>
         </div>
-      )}
-
-      {/* Show All Statuses Toggle */}
-      <div className="text-center">
-        <button
-          onClick={() => setShowAllStatuses(!showAllStatuses)}
-          className="text-xs text-gray-500 hover:text-gray-700 underline"
-        >
-          {showAllStatuses ? "Hide all options" : "Show all status options"}
-        </button>
       </div>
-
-      {/* All Status Options */}
-      {showAllStatuses && (
-        <div className="space-y-2 border-t border-gray-200 pt-3">
-          <p className="text-xs text-gray-500 text-center">All Status Options:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {allStatuses
-              .filter(status => status !== currentStatus)
-              .map((status) => (
-                <button
-                  key={status}
-                  onClick={() => updateStatus(status)}
-                  disabled={isUpdating}
-                  className={`px-2 py-1 text-xs rounded font-medium transition-colors disabled:opacity-50
-                    ${status === 'new' ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200' :
-                      status === 'contacted' ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200' :
-                      status === 'quoted' ? 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' :
-                      status === 'closed' ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200' :
-                      'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
-                >
-                  {statusConfig[status as TripStatus].icon} {statusConfig[status as TripStatus].label}
-                </button>
-              ))}
-          </div>
-        </div>
-      )}
 
       {isUpdating && (
         <div className="text-center">

@@ -180,12 +180,14 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
               )}
             </div>
 
-            <ActivitySelector
-              tripId={trip.id}
-              destination={trip.destination}
-              currentActivities={currentActivities}
-              onActivitiesUpdated={setCurrentActivities}
-            />
+            <div className="mb-4">
+              <ActivitySelector
+                tripId={trip.id}
+                destination={trip.destination}
+                currentActivities={currentActivities}
+                onActivitiesUpdated={setCurrentActivities}
+              />
+            </div>
 
             {currentActivities.length > 0 ? (
               <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -225,24 +227,24 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
                     </div>
                   </div>
                 ))}
-                
-                {/* Total Price */}
-                {currentActivities.length > 1 && (
-                  <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-blue-900">Total Activities Cost:</span>
-                      <span className="font-bold text-lg text-blue-600">
-                        {formatPrice(getTotalActivityPrice(), currentActivities[0]?.currency || "USD")}
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
                 <span className="text-4xl mb-2 block">🎯</span>
-                <p className="text-sm">No activities selected yet</p>
-                <p className="text-xs mt-1">Customer hasn't chosen any activities</p>
+                <p className="text-sm font-medium">No activities selected yet</p>
+                <p className="text-xs mt-1 text-gray-400">Customer hasn't chosen any activities</p>
+              </div>
+            )}
+
+            {/* Total Activities Cost - Outside activities container for proper alignment */}
+            {currentActivities.length > 0 && (
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-blue-900 text-sm">Total Activities Cost:</span>
+                  <span className="font-bold text-lg text-blue-600">
+                    {formatPrice(getTotalActivityPrice(), currentActivities[0]?.currency || "USD")}
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -259,7 +261,6 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
                 onStatusUpdate={handleStatusUpdate}
               />
             </div>
-
 
             {/* Trip Summary */}
             <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">

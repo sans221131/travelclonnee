@@ -622,22 +622,51 @@ export default function TripBuilderLite() {
       // Associate any selected activities from cart with this trip
       if (createdId && typeof window !== 'undefined') {
         const selectedActivityIds = localStorage.getItem('selectedActivities');
+        console.log('Checking for stored activities...', selectedActivityIds);
+        
         if (selectedActivityIds) {
           try {
             const activityIds = JSON.parse(selectedActivityIds);
+            console.log('Found activity IDs to associate:', activityIds);
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
             for (const activityId of activityIds) {
-              await fetch(`/api/trip-requests/${createdId}/activities`, {
+              console.log(`Associating activity ${activityId} with trip ${createdId}`);
+              
+              const response = await fetch(`/api/trip-requests/${createdId}/activities`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ activityId })
               });
+              
+              if (response.ok) {
+                const result = await response.json();
+                console.log(`✓ Successfully associated activity ${activityId}:`, result);
+                successCount++;
+              } else {
+                const error = await response.text();
+                console.error(`✗ Failed to associate activity ${activityId}:`, response.status, error);
+                errorCount++;
+              }
             }
-            // Clear the stored activities after successful association
-            localStorage.removeItem('selectedActivities');
-            console.log('Successfully associated', activityIds.length, 'activities with trip');
+            
+            console.log(`Activity association summary: ${successCount} success, ${errorCount} errors`);
+            
+            // Only clear the stored activities if all were successful
+            if (errorCount === 0) {
+              localStorage.removeItem('selectedActivities');
+              console.log('Cleared stored activities after successful association');
+            } else {
+              console.warn('Some activities failed to associate. Keeping stored activities for retry.');
+            }
+            
           } catch (error) {
-            console.error('Error associating activities:', error);
+            console.error('Error processing activity associations:', error);
           }
+        } else {
+          console.log('No stored activities found to associate');
         }
       }
 

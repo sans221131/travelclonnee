@@ -21,7 +21,32 @@ export default function ActivitySelector({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const destinationId = destination.toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Map destination names to destination IDs used in activities table
+  const getDestinationId = (dest: string): string => {
+    const destLower = dest.toLowerCase();
+    if (destLower.includes('dubai')) return 'dubai';
+    if (destLower.includes('bangkok') || destLower.includes('thailand')) return 'thailand';
+    if (destLower.includes('london')) return 'london';
+    if (destLower.includes('new york') || destLower.includes('united states')) return 'united-states';
+    if (destLower.includes('bali')) return 'bali';
+    if (destLower.includes('switzerland')) return 'switzerland';
+    if (destLower.includes('paris')) return 'paris';
+    if (destLower.includes('bhutan')) return 'bhutan';
+    if (destLower.includes('maldives')) return 'maldives';
+    if (destLower.includes('kerala')) return 'kerala';
+    if (destLower.includes('assam')) return 'assam';
+    if (destLower.includes('himachal')) return 'himachal';
+    if (destLower.includes('meghalaya')) return 'meghalaya';
+    if (destLower.includes('mysore')) return 'mysore';
+    if (destLower.includes('rajasthan')) return 'rajasthan';
+    if (destLower.includes('uttarakhand')) return 'uttarakhand';
+    if (destLower.includes('ladakh')) return 'ladakh';
+    
+    // Fallback: clean the destination string
+    return destLower.replace(/[^a-z0-9]/g, '');
+  };
+
+  const destinationId = getDestinationId(destination);
 
   useEffect(() => {
     if (isOpen) {
@@ -81,12 +106,12 @@ export default function ActivitySelector({
   const currentActivityIds = currentActivities.map(a => a.id);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="text-xs text-blue-600 hover:text-blue-800 underline"
+        className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-2 px-3 rounded-lg border border-blue-200 transition-colors"
       >
-        {isOpen ? 'Hide' : 'Manage'} Activities
+        {isOpen ? '👁️ Hide' : '⚙️ Manage'} Activities
       </button>
 
       {isOpen && (

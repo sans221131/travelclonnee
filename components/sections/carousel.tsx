@@ -484,7 +484,8 @@ export default function Carousel({
               {title}
             </h2>
             <p
-              className="text-sm sm:text-base md:text-lg text-white/80 mt-3 sm:mt-4 md:mt-5 drop-shadow-md"
+              className="mt-6 sm:mt-8 text-base sm:text-lg lg:text-xl leading-relaxed text-white/80 max-w-2xl mx-auto"
+              style={{ fontFamily: 'var(--font-dunbar-text), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
               aria-live="polite"
             >
               Discover your next adventure

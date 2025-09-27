@@ -11,40 +11,58 @@ export const revalidate = 0;
 
 async function getTripRequestsWithActivities() {
   try {
-    // Get all trip requests
-    const trips = await db.select().from(tripRequests).orderBy(desc(tripRequests.createdAt));
+    console.log("Fetching trips with activities...");
     
-    // Get all trip request activities with activity details
-    const tripsWithActivities = await Promise.all(
-      trips.map(async (trip) => {
-        // Get activity IDs for this trip
-        const tripActivities = await db
-          .select({
-            activityId: tripRequestActivities.activityId,
-            createdAt: tripRequestActivities.createdAt
-          })
-          .from(tripRequestActivities)
-          .where(eq(tripRequestActivities.tripRequestId, trip.id));
+    // Get all trip requests first
+    const allTrips = await db
+      .select()
+      .from(tripRequests)
+      .orderBy(desc(tripRequests.createdAt));
+    
+    console.log(`Found ${allTrips.length} trips`);
 
-        // Get full activity details
-        const activityDetails = await Promise.all(
-          tripActivities.map(async (ta) => {
-            const activity = await db
-              .select()
-              .from(activities)
-              .where(eq(activities.id, ta.activityId))
-              .limit(1);
-            
-            return activity[0] || null;
-          })
-        );
-
-        return {
-          ...trip,
-          activities: activityDetails.filter(Boolean) // Remove null activities
-        };
+    // Use a more efficient approach with a single query to get all trip-activity associations
+    const tripActivityAssociations = await db
+      .select({
+        tripRequestId: tripRequestActivities.tripRequestId,
+        activity: {
+          id: activities.id,
+          destinationId: activities.destinationId,
+          name: activities.name,
+          description: activities.description,
+          price: activities.price,
+          currency: activities.currency,
+          reviewCount: activities.reviewCount,
+          imageUrl: activities.imageUrl,
+          isActive: activities.isActive,
+          createdAt: activities.createdAt,
+          updatedAt: activities.updatedAt
+        }
       })
-    );
+      .from(tripRequestActivities)
+      .innerJoin(activities, eq(tripRequestActivities.activityId, activities.id))
+      .where(eq(activities.isActive, true));
+
+    console.log(`Found ${tripActivityAssociations.length} activity associations`);
+
+    // Group activities by trip ID
+    const activitiesByTripId = new Map<string, typeof activities.$inferSelect[]>();
+    
+    tripActivityAssociations.forEach(assoc => {
+      const tripId = assoc.tripRequestId;
+      if (!activitiesByTripId.has(tripId)) {
+        activitiesByTripId.set(tripId, []);
+      }
+      activitiesByTripId.get(tripId)!.push(assoc.activity);
+    });
+
+    // Combine trips with their activities
+    const tripsWithActivities = allTrips.map(trip => ({
+      ...trip,
+      activities: activitiesByTripId.get(trip.id) || []
+    }));
+
+    console.log(`Trips with activities: ${tripsWithActivities.filter(t => t.activities.length > 0).length}`);
 
     return tripsWithActivities;
   } catch (error) {
