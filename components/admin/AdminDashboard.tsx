@@ -118,7 +118,7 @@ export default function AdminDashboard({ trips }: AdminDashboardProps) {
 
       {/* Results count */}
       <div className="mb-6">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-zinc-400">
           Showing {filteredAndSortedTrips.length} of {tripsData.length} trip requests
         </p>
       </div>
@@ -137,13 +137,11 @@ export default function AdminDashboard({ trips }: AdminDashboardProps) {
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <div className="w-16 h-16 mx-auto bg-white/10 border border-white/20 rounded-full flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-full bg-zinc-500"></div>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-          <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+          <h3 className="text-lg font-medium text-zinc-200 mb-2">No results found</h3>
+          <p className="text-zinc-500">Try adjusting your filters or search terms.</p>
         </div>
       )}
     </div>

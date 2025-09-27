@@ -169,7 +169,12 @@ export async function getActivitiesForReceipt(
   destinationId?: string | null,
   limit = 24
 ): Promise<{ selected: Activity[]; suggestions: Activity[] }> {
-  const selected = await getSelectedActivitiesForTrip(tripId);
+  const allSelected = await getSelectedActivitiesForTrip(tripId);
+
+  // Filter selected activities to only include ones matching the destination
+  const selected = destinationId 
+    ? allSelected.filter(activity => activity.destinationId === destinationId)
+    : allSelected;
 
   // If there is no destinationId, or you don't want suggestions, just return curated
   if (!destinationId) {

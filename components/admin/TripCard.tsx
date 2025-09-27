@@ -18,19 +18,11 @@ type TripCardProps = {
 };
 
 const statusColors = {
-  new: "bg-blue-100 text-blue-800 border-blue-200",
-  contacted: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  quoted: "bg-purple-100 text-purple-800 border-purple-200",
-  closed: "bg-green-100 text-green-800 border-green-200",
-  archived: "bg-gray-100 text-gray-800 border-gray-200",
-};
-
-const statusIcons = {
-  new: "🆕",
-  contacted: "📞",
-  quoted: "💰",
-  closed: "✅",
-  archived: "📁",
+  new: "bg-blue-500/10 text-blue-300 border-blue-500/20",
+  contacted: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20",
+  quoted: "bg-purple-500/10 text-purple-300 border-purple-500/20",
+  closed: "bg-green-500/10 text-green-300 border-green-500/20",
+  archived: "bg-zinc-500/10 text-zinc-300 border-zinc-500/20",
 };
 
 export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps) {
@@ -65,24 +57,24 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+    <div className="bg-zinc-950 rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))] backdrop-blur-md shadow-[0_30px_110px_-30px_rgba(0,0,0,.8)] text-zinc-100 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+      <div className="bg-[radial-gradient(120px_60px_at_30%_25%,rgba(255,255,255,.08),transparent_60%),radial-gradient(140px_70px_at_70%_75%,rgba(255,255,255,.08),transparent_60%)] px-6 py-4 border-b border-white/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold text-blue-600">
+            <div className="bg-white/10 border border-white/20 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold text-zinc-200">
               {index + 1}
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{trip.passengerName}</h3>
-              <p className="text-sm text-gray-600">{trip.email}</p>
+              <h3 className="text-lg font-semibold text-zinc-100">{trip.passengerName}</h3>
+              <p className="text-sm text-zinc-400">{trip.email}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[currentStatus]}`}>
-              {statusIcons[currentStatus]} {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
+              {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-zinc-500">
               {formatDistanceToNow(new Date(trip.createdAt), { addSuffix: true })}
             </span>
           </div>
@@ -93,75 +85,75 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
         <div className="grid md:grid-cols-3 gap-6">
           {/* Trip Details */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Trip Details</h4>
+            <h4 className="font-semibold text-zinc-200 text-sm uppercase tracking-wide">Trip Details</h4>
             
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl">✈️</span>
+                <div className="w-2 h-2 rounded-full bg-zinc-400"></div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{trip.origin} → {trip.destination}</p>
-                  <p className="text-xs text-gray-500">Route</p>
+                  <p className="text-sm font-medium text-zinc-200">{trip.origin} → {trip.destination}</p>
+                  <p className="text-xs text-zinc-500">Route</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
-                <span className="text-2xl">📅</span>
+                <div className="w-2 h-2 rounded-full bg-zinc-400"></div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-zinc-200">
                     {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
                   </p>
-                  <p className="text-xs text-gray-500">Travel Dates</p>
+                  <p className="text-xs text-zinc-500">Travel Dates</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
-                <span className="text-2xl">👥</span>
+                <div className="w-2 h-2 rounded-full bg-zinc-400"></div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-zinc-200">
                     {trip.adults} Adults{trip.kids > 0 && `, ${trip.kids} Kids`}
                   </p>
-                  <p className="text-xs text-gray-500">Passengers</p>
+                  <p className="text-xs text-zinc-500">Passengers</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
-                <span className="text-2xl">🏳️</span>
+                <div className="w-2 h-2 rounded-full bg-zinc-400"></div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{trip.nationality}</p>
-                  <p className="text-xs text-gray-500">Nationality</p>
+                  <p className="text-sm font-medium text-zinc-200">{trip.nationality}</p>
+                  <p className="text-xs text-zinc-500">Nationality</p>
                 </div>
               </div>
             </div>
 
             {/* Contact Info */}
-            <div className="pt-3 border-t border-gray-100">
+            <div className="pt-3 border-t border-white/10">
               <div className="flex items-center space-x-2">
-                <span className="text-lg">📱</span>
-                <p className="text-sm text-gray-900">
+                <div className="w-2 h-2 rounded-full bg-zinc-400"></div>
+                <p className="text-sm text-zinc-200">
                   {trip.phoneCountryCode} {trip.phoneNumber}
                 </p>
               </div>
             </div>
 
             {/* Preferences */}
-            <div className="pt-3 border-t border-gray-100 space-y-2">
-              <h5 className="font-medium text-gray-900 text-xs uppercase tracking-wide">Preferences</h5>
+            <div className="pt-3 border-t border-white/10 space-y-2">
+              <h5 className="font-medium text-zinc-200 text-xs uppercase tracking-wide">Preferences</h5>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Flight Class:</span>
-                  <p className="font-medium">{trip.flightClass}</p>
+                  <span className="text-zinc-500">Flight Class:</span>
+                  <p className="font-medium text-zinc-300">{trip.flightClass}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Visa Status:</span>
-                  <p className="font-medium">{trip.visaStatus}</p>
+                  <span className="text-zinc-500">Visa Status:</span>
+                  <p className="font-medium text-zinc-300">{trip.visaStatus}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Airline:</span>
-                  <p className="font-medium">{trip.airlinePreference}</p>
+                  <span className="text-zinc-500">Airline:</span>
+                  <p className="font-medium text-zinc-300">{trip.airlinePreference}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Hotel:</span>
-                  <p className="font-medium">{trip.hotelPreference}</p>
+                  <span className="text-zinc-500">Hotel:</span>
+                  <p className="font-medium text-zinc-300">{trip.hotelPreference}</p>
                 </div>
               </div>
             </div>
@@ -170,11 +162,11 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
           {/* Activities */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">
+              <h4 className="font-semibold text-zinc-200 text-sm uppercase tracking-wide">
                 Selected Activities
               </h4>
               {currentActivities.length > 0 && (
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                <span className="bg-green-500/10 text-green-300 border border-green-500/20 px-2 py-1 rounded-full text-xs font-medium">
                   {currentActivities.length} activities
                 </span>
               )}
@@ -194,7 +186,7 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
                 {currentActivities.map((activity) => (
                   <div
                     key={activity.id}
-                    className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-gray-300 transition-colors"
+                    className="bg-white/5 rounded-lg p-3 border border-white/10 hover:border-white/20 transition-colors"
                   >
                     <div className="flex items-start space-x-3">
                       <img
@@ -203,23 +195,23 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
                         className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = `https://via.placeholder.com/64x64/f3f4f6/6b7280?text=${activity.name.charAt(0)}`;
+                          target.src = `https://via.placeholder.com/64x64/27272a/a1a1aa?text=${activity.name.charAt(0)}`;
                         }}
                       />
                       <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-gray-900 text-sm line-clamp-2">
+                        <h5 className="font-medium text-zinc-100 text-sm line-clamp-2">
                           {activity.name}
                         </h5>
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        <p className="text-xs text-zinc-400 mt-1 line-clamp-2">
                           {activity.description}
                         </p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="font-semibold text-sm text-green-600">
+                          <span className="font-semibold text-sm text-green-400">
                             {formatPrice(parseFloat(activity.price), activity.currency)}
                           </span>
                           {activity.reviewCount > 0 && (
-                            <span className="text-xs text-gray-500">
-                              ⭐ {activity.reviewCount} reviews
+                            <span className="text-xs text-zinc-500">
+                              {activity.reviewCount} reviews
                             </span>
                           )}
                         </div>
@@ -229,19 +221,21 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-                <span className="text-4xl mb-2 block">🎯</span>
+              <div className="text-center py-8 text-zinc-500 bg-white/5 rounded-lg border border-white/10">
+                <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-white/10 flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-full bg-zinc-500"></div>
+                </div>
                 <p className="text-sm font-medium">No activities selected yet</p>
-                <p className="text-xs mt-1 text-gray-400">Customer hasn't chosen any activities</p>
+                <p className="text-xs mt-1 text-zinc-600">Customer hasn't chosen any activities</p>
               </div>
             )}
 
             {/* Total Activities Cost - Outside activities container for proper alignment */}
             {currentActivities.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+              <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/20">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium text-blue-900 text-sm">Total Activities Cost:</span>
-                  <span className="font-bold text-lg text-blue-600">
+                  <span className="font-medium text-blue-300 text-sm">Total Activities Cost:</span>
+                  <span className="font-bold text-lg text-blue-400">
                     {formatPrice(getTotalActivityPrice(), currentActivities[0]?.currency || "USD")}
                   </span>
                 </div>
@@ -251,10 +245,10 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
 
           {/* Status Management */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">
+            <h4 className="font-semibold text-zinc-200 text-sm uppercase tracking-wide">
               Status Management
             </h4>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
               <StatusActions
                 tripId={trip.id}
                 currentStatus={currentStatus}
@@ -263,19 +257,19 @@ export default function TripCard({ trip, index, onStatusUpdate }: TripCardProps)
             </div>
 
             {/* Trip Summary */}
-            <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/20">
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-blue-700">Trip ID:</span>
-                  <span className="font-mono text-blue-900">{trip.id.slice(0, 8)}...</span>
+                  <span className="text-blue-300">Trip ID:</span>
+                  <span className="font-mono text-blue-200">{trip.id.slice(0, 8)}...</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-blue-700">Created:</span>
-                  <span className="text-blue-900">{formatDate(trip.createdAt)}</span>
+                  <span className="text-blue-300">Created:</span>
+                  <span className="text-blue-200">{formatDate(trip.createdAt)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-blue-700">Last Updated:</span>
-                  <span className="text-blue-900">{formatDate(trip.updatedAt)}</span>
+                  <span className="text-blue-300">Last Updated:</span>
+                  <span className="text-blue-200">{formatDate(trip.updatedAt)}</span>
                 </div>
               </div>
             </div>

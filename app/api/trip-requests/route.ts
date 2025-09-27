@@ -5,7 +5,15 @@ import { tripRequests } from "@/db/schema";
 
 export async function POST(request: Request) {
   try {
+    console.log('POST /api/trip-requests - Starting request processing');
+    
     const body = await request.json();
+    console.log('POST /api/trip-requests - Request body received:', {
+      origin: body.origin,
+      destination: body.destination,
+      passengerName: body.passengerName,
+      email: body.email
+    });
     
     // Validate required fields
     const requiredFields = [
@@ -27,12 +35,15 @@ export async function POST(request: Request) {
 
     for (const field of requiredFields) {
       if (!body[field]) {
+        console.error(`POST /api/trip-requests - Missing required field: ${field}`);
         return NextResponse.json(
           { error: `Missing required field: ${field}` },
           { status: 400 }
         );
       }
     }
+
+    console.log('POST /api/trip-requests - Validation passed, inserting into database');
 
     // Insert into database
     const [newTripRequest] = await db.insert(tripRequests).values({
@@ -53,11 +64,23 @@ export async function POST(request: Request) {
       phoneNumber: body.phoneNumber,
     }).returning();
 
+    console.log('POST /api/trip-requests - Successfully created trip request:', newTripRequest.id);
     return NextResponse.json(newTripRequest, { status: 201 });
   } catch (error) {
-    console.error('Error creating trip request:', error);
+    console.error('POST /api/trip-requests - Database error:', error);
+    
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('POST /api/trip-requests - Error name:', error.name);
+      console.error('POST /api/trip-requests - Error message:', error.message);
+      console.error('POST /api/trip-requests - Error stack:', error.stack);
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -65,15 +88,20 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    console.log('GET /api/trip-requests - Fetching all trip requests');
     const allTripRequests = await db.select().from(tripRequests);
+    console.log('GET /api/trip-requests - Successfully fetched', allTripRequests.length, 'trip requests');
     return NextResponse.json(allTripRequests);
   } catch (error) {
-    console.error('Error fetching trip requests:', error);
+    console.error('GET /api/trip-requests - Error fetching trip requests:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
 }
 
-export const runtime = "edge";
+export const runtime = "nodejs";

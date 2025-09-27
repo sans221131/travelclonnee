@@ -89,9 +89,9 @@ const VALIDATION_LIMITS = {
   name: { min: 2, max: 50 },
   phoneNumber: { min: 6, max: 15 },
   phoneCountryCode: { min: 2, max: 4 },
-  adults: { min: 1, max: 20 },
-  children: { min: 0, max: 10 },
-  totalTravelers: 25,
+  adults: { min: 1, max: 999 },
+  children: { min: 0, max: 999 },
+  totalTravelers: 999,
   tripDurationDays: 365,
   futureYears: 2,
 } as const;
@@ -438,12 +438,8 @@ export default function TripBuilderLite() {
       case "travellers":
         const adults = answers.adults ?? 0;
         const children = answers.children ?? 0;
-        // Reasonable limits: 1-20 adults, 0-10 children, max 25 total
-        return adults >= 1 && 
-               adults <= 20 && 
-               children >= 0 && 
-               children <= 10 && 
-               (adults + children) <= 25;
+        // Only ensure at least 1 adult, no upper limits
+        return adults >= 1 && children >= 0;
       case "passengerName":
         const name = (answers.passengerName || "").trim();
         const surname = (answers.passengerSurname || "").trim();
@@ -676,6 +672,7 @@ export default function TripBuilderLite() {
       const destId = destinationSlugFromLabel(payload.destination);
       if (destId) params.set("destinationId", destId);
 
+      // Keep the loading state active during navigation
       if (createdId) {
         router.push(
           `/trip/receipt/${createdId}${params.size ? `?${params}` : ""}`
@@ -683,6 +680,7 @@ export default function TripBuilderLite() {
       } else {
         router.push(`/trip/receipt${params.size ? `?${params}` : ""}`);
       }
+      // Note: submitting state will remain "saved" until component unmounts or navigation completes
     } catch {
       setSubmitting("error");
     }
@@ -960,14 +958,10 @@ export default function TripBuilderLite() {
                           <NumberField
                             id="adults"
                             min={1}
-                            max={20}
+                            max={999}
                             value={answers.adults ?? 1}
                             onChange={(n) => {
-                              // Ensure total travelers don't exceed 25
-                              const children = answers.children ?? 0;
-                              if (n + children <= 25) {
-                                setAnswers((a) => ({ ...a, adults: n }));
-                              }
+                              setAnswers((a) => ({ ...a, adults: n }));
                             }}
                           />
                         </Labeled>
@@ -975,14 +969,10 @@ export default function TripBuilderLite() {
                           <NumberField
                             id="children"
                             min={0}
-                            max={10}
+                            max={999}
                             value={answers.children ?? 0}
                             onChange={(n) => {
-                              // Ensure total travelers don't exceed 25
-                              const adults = answers.adults ?? 1;
-                              if (adults + n <= 25) {
-                                setAnswers((a) => ({ ...a, children: n }));
-                              }
+                              setAnswers((a) => ({ ...a, children: n }));
                             }}
                           />
                         </Labeled>
@@ -1487,15 +1477,17 @@ export default function TripBuilderLite() {
       `}</style>
 
       {/* Loading Popup */}
-      {submitting === "saving" && (
+      {(submitting === "saving" || submitting === "saved") && (
         <div className="loading-popup">
           <div className="loading-card">
             <div className="spinner"></div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              Creating Your Trip
+              {submitting === "saving" ? "Creating Your Trip" : "Redirecting to Your Trip"}
             </h3>
             <p className="text-sm text-white/70 mb-1">
-              Processing your preferences...
+              {submitting === "saving" 
+                ? "Processing your preferences..." 
+                : "Taking you to your trip details..."}
             </p>
             <div className="pulse-dots">
               <div className="pulse-dot"></div>
@@ -1609,7 +1601,7 @@ function Labeled({
 function NumberField({
   id,
   min = 0,
-  max = 25,
+  max = 999,
   value,
   onChange,
 }: {

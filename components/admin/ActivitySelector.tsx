@@ -109,21 +109,21 @@ export default function ActivitySelector({
     <div className="space-y-3">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-2 px-3 rounded-lg border border-blue-200 transition-colors"
+        className="w-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 text-sm font-medium py-2 px-3 rounded-lg border border-blue-500/20 transition-colors"
       >
-        {isOpen ? '👁️ Hide' : '⚙️ Manage'} Activities
+        {isOpen ? 'Hide' : 'Manage'} Activities
       </button>
 
       {isOpen && (
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 space-y-3">
-          <h4 className="text-sm font-medium text-gray-900">
+        <div className="bg-white/5 rounded-lg p-3 border border-white/10 space-y-3">
+          <h4 className="text-sm font-medium text-zinc-200">
             Available Activities in {destination}
           </h4>
 
           {isLoading ? (
             <div className="text-center py-4">
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-xs text-gray-500 mt-1">Loading activities...</p>
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-xs text-zinc-500 mt-1">Loading activities...</p>
             </div>
           ) : availableActivities.length > 0 ? (
             <div className="space-y-2">
@@ -132,20 +132,20 @@ export default function ActivitySelector({
                 return (
                   <div 
                     key={activity.id}
-                    className="flex items-center justify-between p-2 bg-white rounded border border-gray-200"
+                    className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
                   >
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{activity.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium text-zinc-200">{activity.name}</p>
+                      <p className="text-xs text-zinc-500">
                         {activity.currency} {activity.price}
                       </p>
                     </div>
                     <button
                       onClick={() => isSelected ? removeActivity(activity) : addActivity(activity)}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                      className={`px-2 py-1 text-xs rounded transition-colors border ${
                         isSelected
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                          : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                          ? 'bg-red-500/10 text-red-300 hover:bg-red-500/20 border-red-500/20'
+                          : 'bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border-blue-500/20'
                       }`}
                     >
                       {isSelected ? 'Remove' : 'Add'}
@@ -155,7 +155,7 @@ export default function ActivitySelector({
               })}
             </div>
           ) : (
-            <p className="text-xs text-gray-500 text-center py-2">
+            <p className="text-xs text-zinc-500 text-center py-2">
               No activities found for this destination
             </p>
           )}
