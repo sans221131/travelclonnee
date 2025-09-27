@@ -31,15 +31,15 @@ const CAROUSEL_TO_DESTINATION_MAP: Record<string, string> = {
   bali: "Bali, Indonesia",
   switzerland: "Switzerland",
   paris: "Paris, France",
-  bhutan: "Phuket, Thailand",
+  bhutan: "Bhutan",
   maldives: "Maldives, Maldives",
   kerala: "Kerala, India",
-  assam: "Kerala, India",
+  assam: "Assam, India",
   himachal: "Himachal Pradesh, India",
-  meghalaya: "Himachal Pradesh, India",
-  mysore: "Kerala, India",
+  meghalaya: "Meghalaya, India",
+  mysore: "Mysore, India",
   rajasthan: "Rajasthan, India",
-  uttarakhand: "Himachal Pradesh, India",
+  uttarakhand: "Uttarakhand, India",
   ladakh: "Ladakh, India",
 };
 
@@ -313,12 +313,18 @@ export default function Carousel({
     centerPill(clamped);
   };
 
-  // Handle destination selection - just collect data, no redirect
-  const handleDestinationSelect = (itemId: string) => {
+  // Handle destination selection and scroll to trip builder
+  const handleDestinationSelect = (itemId: string, delayScrolling = false) => {
     const destination = CAROUSEL_TO_DESTINATION_MAP[itemId];
     if (destination) {
       const selectedItem = items.find((item) => item.id === itemId);
 
+      // Update URL with selected destination
+      const url = new URL(window.location.href);
+      url.searchParams.set("destination", destination);
+      window.history.pushState({}, "", url.toString());
+
+      // Show temporary confirmation
       const indicator = document.createElement("div");
       indicator.innerHTML = `
         <div class="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg border border-green-500 animate-pulse">
@@ -328,12 +334,29 @@ export default function Carousel({
       document.body.appendChild(indicator);
 
       setTimeout(() => {
-        document.body.removeChild(indicator);
+        if (indicator.parentNode) {
+          document.body.removeChild(indicator);
+        }
       }, 2000);
 
-      const url = new URL(window.location.href);
-      url.searchParams.set("destination", destination);
-      window.history.pushState({}, "", url.toString());
+      // Calculate delay based on whether we need to wait for animation
+      const scrollDelay = delayScrolling ? TRAVEL_MAX + 300 : 500; // Wait for max animation time + buffer
+
+      // Scroll to trip builder section smoothly after animation completes
+      setTimeout(() => {
+        const tripBuilderSection = document.getElementById("trip-builder");
+        if (tripBuilderSection) {
+          tripBuilderSection.scrollIntoView({ 
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      }, scrollDelay);
+
+      // Dispatch custom event to notify trip builder component
+      window.dispatchEvent(new CustomEvent('destinationSelected', {
+        detail: { destination, itemId }
+      }));
     }
   };
 
@@ -508,11 +531,18 @@ export default function Carousel({
             aria-label={`${p.title} (${i + 1} of ${items.length})`}
           >
             <div
-              className={`relative aspect-[3/4] sm:aspect-[4/5] md:aspect-[16/10] w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/40 group transition-all duration-1000 ease-out ${
+              className={`relative aspect-[3/4] sm:aspect-[4/5] md:aspect-[16/10] w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl shadow-black/40 group transition-all duration-1000 ease-out cursor-pointer ${
                 i === active
                   ? "ring-2 ring-white/90 ring-offset-1 ring-offset-transparent scale-100 sm:scale-105"
                   : "ring-1 ring-white/20 opacity-75 scale-95 sm:scale-98"
               }`}
+              onClick={() => {
+                const needsAnimation = i !== active; // Check if we need to animate to this card first
+                if (needsAnimation) {
+                  travelToIndex(i); // Animate to the card first
+                }
+                handleDestinationSelect(p.id, needsAnimation); // Then handle selection with appropriate delay
+              }}
               style={
                 isRouletting && i === active
                   ? {
@@ -573,13 +603,9 @@ export default function Carousel({
                   <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
                     {p.title}
                   </div>
-                  {p.subtitle ? (
+                  {p.subtitle && (
                     <div className="text-xs sm:text-sm md:text-base lg:text-lg text-white/90 drop-shadow-md font-medium">
                       {p.subtitle}
-                    </div>
-                  ) : (
-                    <div className="text-xs sm:text-sm text-white/75 drop-shadow-md">
-                      Discover amazing destinations
                     </div>
                   )}
                 </div>
@@ -624,7 +650,9 @@ export default function Carousel({
                     pillBtnRefs.current[i] = el;
                   }}
                   onClick={() => {
+                    const needsAnimation = i !== active; // Check if animation is needed
                     travelToIndex(i); // smooth travel
+                    handleDestinationSelect(p.id, needsAnimation); // delay scrolling if animation is needed
                   }}
                   role="tab"
                   aria-selected={i === active}

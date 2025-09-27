@@ -310,6 +310,29 @@ export default function TripBuilderLite() {
     }
   }, [searchParams]);
 
+  // Listen for destination selection events from carousel
+  useEffect(() => {
+    const handleDestinationSelected = (event: CustomEvent) => {
+      const { destination } = event.detail;
+      if (destination && DESTINATIONS.includes(destination as any)) {
+        setAnswers(prev => ({
+          ...prev,
+          seededDestination: destination,
+          seedPromptShown: false,
+        }));
+        
+        // Reset to first step to show the seeded destination flow
+        setIdx(0);
+        setMaxVisited(0);
+      }
+    };
+
+    window.addEventListener('destinationSelected', handleDestinationSelected as EventListener);
+    return () => {
+      window.removeEventListener('destinationSelected', handleDestinationSelected as EventListener);
+    };
+  }, []);
+
   // Determine current step, but skip destinationSeed if nothing is seeded
   const steps = useMemo(() => {
     if (!answers.seededDestination) {
