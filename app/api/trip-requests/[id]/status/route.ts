@@ -1,4 +1,6 @@
 // app/api/trip-requests/[id]/status/route.ts
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { tripRequests } from "@/db/schema";

@@ -5,40 +5,46 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import SectionHeader from "@/components/sections/SectionHeader";
 
 /* ---------------- Config ---------------- */
-const REF_REGEX = /\bINV-[A-Z0-9]{5,10}\b/;
-const FETCH_LATENCY_MS = 650;
+const REF_REGEX = /\b(LW|INV)-[A-Z0-9]{4,10}\b/;
 
 type Invoice = {
   id: string;
+  receipt: string;
   dateISO: string;
   amount: number;
   currency: string;
   billTo: string;
-  status: "unpaid" | "paid" | "expired";
-};
-
-const MOCK: Record<string, Invoice> = {
-  "INV-AX7Q9K": {
-    id: "INV-AX7Q9K",
-    dateISO: "2025-09-18",
-    amount: 2499,
-    currency: "AED",
-    billTo: "Naeem Ali",
-    status: "unpaid",
-  },
-  "INV-Z9M2Q1": {
-    id: "INV-Z9M2Q1",
-    dateISO: "2025-08-31",
-    amount: 139900,
-    currency: "INR",
-    billTo: "Leafway Corporate",
-    status: "unpaid",
-  },
+  status: "unpaid" | "paid" | "expired" | "draft" | "issued" | "cancelled" | "partially_paid";
+  provider_short_url?: string | null;
 };
 
 async function lookupInvoice(ref: string): Promise<Invoice | null> {
-  await new Promise((r) => setTimeout(r, FETCH_LATENCY_MS));
-  return MOCK[ref] ?? null;
+  try {
+    const response = await fetch(`/api/invoices/${encodeURIComponent(ref)}`);
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    if (!data.success || !data.invoice) {
+      return null;
+    }
+    
+    // Transform API response to match component's Invoice type
+    const inv = data.invoice;
+    return {
+      id: inv.receipt || inv.id,
+      receipt: inv.receipt,
+      dateISO: new Date(inv.created_at).toISOString().split('T')[0],
+      amount: inv.amount_in_paise, // Use amount as is (no conversion)
+      currency: inv.currency,
+      billTo: inv.customer_name || "—",
+      status: inv.status as any,
+      provider_short_url: inv.provider_short_url || null,
+    };
+  } catch (error) {
+    console.error("Error fetching invoice:", error);
+    return null;
+  }
 }
 
 function isUserInUAE(): boolean {
@@ -159,9 +165,11 @@ export default function InvoiceQuickPay() {
 
   function onChangeRef(raw: string) {
     const up = raw.toUpperCase().replace(/[^A-Z0-9-]/g, "");
-    let val = up.startsWith("INV-")
-      ? up
-      : "INV-" + up.replace(/^INV-?/, "").replace(/^INV/, "");
+    let val = up;
+    // Add prefix if not present
+    if (!up.startsWith("LW-") && !up.startsWith("INV-")) {
+      val = "LW-" + up.replace(/^(LW-?|INV-?)/, "");
+    }
     setRefInput(val);
     setStatus("validating");
     setStep(1);
@@ -199,18 +207,27 @@ export default function InvoiceQuickPay() {
   function openDrawer() {
     if (!invoice) return;
     setDrawer(true);
-    setStep(3);
+    // Stay at step 2 for reviewing
   }
 
   function closeDrawer() {
     setDrawer(false);
-    setStep(invoice ? 2 : 1);
   }
 
-  function beginRazorpay() {
+  function handlePaymentClick() {
     if (!invoice) return;
-    if (!aeUser) return toast("Payments available in UAE only for now.");
-    if (!window.Razorpay) return toast("Razorpay will be wired soon.");
+    setStep(3); // Move to step 3 when initiating payment
+    
+    if (invoice.provider_short_url) {
+      // Open Razorpay link in new tab
+      window.open(invoice.provider_short_url, '_blank', 'noopener,noreferrer');
+      toast("Opening payment link...");
+    } else if (aeUser && window.Razorpay) {
+      // Use Razorpay integration if available
+      toast("Razorpay integration coming soon...");
+    } else {
+      toast("No payment link available. Contact admin.");
+    }
   }
 
   const canPay = invoice && invoice.status === "unpaid";
@@ -264,7 +281,7 @@ export default function InvoiceQuickPay() {
                       REF
                     </div>
                     <div className="mt-2 text-xs text-zinc-200 break-all">
-                      {invoice?.id || refInput || "INV-XXXXX"}
+                      {invoice?.receipt || invoice?.id || refInput || "LW-2025-XXXX"}
                     </div>
                   </div>
 
@@ -334,7 +351,7 @@ export default function InvoiceQuickPay() {
                   <div className="inline-flex items-center gap-2 text-[11px] sm:text-sm text-zinc-400">
                     Pay using reference
                     <span className="rounded-md bg-white/5 px-1.5 py-0.5 font-mono text-[10px] sm:text-[12px] text-zinc-200">
-                      {invoice?.id || refInput || "INV-XXXXX"}
+                      {invoice?.receipt || invoice?.id || refInput || "LW-2025-XXXX"}
                     </span>
                   </div>
 
@@ -346,7 +363,7 @@ export default function InvoiceQuickPay() {
                     </label>
                     <div className="relative flex-1 md:flex-none md:w-80">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-zinc-300">
-                        INV
+                        LW
                       </span>
                       <input
                         id="invref"
@@ -357,7 +374,7 @@ export default function InvoiceQuickPay() {
                         maxLength={15}
                         value={refInput}
                         onChange={(e) => onChangeRef(e.target.value)}
-                        placeholder="INV-AX7Q9K"
+                        placeholder="LW-2025-0042"
                         className="h-10 sm:h-11 w-full rounded-full border border-white/10 bg-zinc-900/70 pl-14 pr-4 text-[13px] sm:text-sm tracking-wider text-white placeholder:text-zinc-500 outline-none focus:border-white/30"
                         aria-describedby="refHelp"
                       />
@@ -383,11 +400,11 @@ export default function InvoiceQuickPay() {
             {/* Drawer */}
             <div
               className={[
-                "overflow-hidden rounded-b-2xl sm:rounded-b-3xl border-t border-white/10 bg-zinc-900/50 backdrop-blur",
-                drawer ? "max-h-[70vh]" : "max-h-0",
+                "overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-zinc-900/50 backdrop-blur",
+                drawer ? "max-h-[70vh] opacity-100" : "max-h-0 opacity-0",
                 reduced
-                  ? "transition-[max-height] duration-200"
-                  : "transition-[max-height] duration-400",
+                  ? "transition-all duration-200"
+                  : "transition-all duration-400",
               ].join(" ")}
               aria-hidden={!drawer}
             >
@@ -396,7 +413,7 @@ export default function InvoiceQuickPay() {
                   <div>
                     <p className="text-xs text-zinc-400">Paying</p>
                     <p className="text-base sm:text-lg font-medium tracking-wide">
-                      {invoice?.id} · {invoice ? money(invoice.amount, invoice.currency) : ""}
+                      {invoice?.receipt || invoice?.id} · {invoice ? money(invoice.amount, invoice.currency) : ""}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -425,10 +442,21 @@ export default function InvoiceQuickPay() {
                 <div className="mt-5 sm:mt-6 flex flex-col items-stretch sm:flex-row sm:items-center sm:justify-between gap-4">
                   <MethodsRowDark />
                   <div className="flex gap-3">
-                    {canPay && aeUser ? (
+                    {invoice?.provider_short_url ? (
                       <button
                         type="button"
-                        onClick={beginRazorpay}
+                        onClick={handlePaymentClick}
+                        className="w-full sm:w-auto rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 sm:py-2.5 text-sm font-medium shadow-sm transition-all inline-flex items-center justify-center gap-2"
+                      >
+                        Open Payment Link
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </button>
+                    ) : canPay && aeUser ? (
+                      <button
+                        type="button"
+                        onClick={handlePaymentClick}
                         className="w-full sm:w-auto rounded-full bg-white text-zinc-950 px-5 py-3 sm:py-2.5 text-sm font-medium shadow-sm hover:brightness-95"
                       >
                         Pay with Razorpay
@@ -437,7 +465,7 @@ export default function InvoiceQuickPay() {
                       <button
                         type="button"
                         onClick={() =>
-                          toast(aeUser ? "Invoice not ready." : "Outside UAE: request link.")
+                          toast("No payment link available. Contact admin.")
                         }
                         className="w-full sm:w-auto rounded-full border border-white/10 bg-white/5 px-5 py-3 sm:py-2.5 text-sm font-medium text-zinc-200 hover:bg-white/10"
                       >

@@ -11,6 +11,7 @@ import {
   index,
   uniqueIndex,
   numeric,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const tripStatus = pgEnum("trip_status", [
@@ -109,6 +110,23 @@ export const tripRequestActivities = pgTable(
     ),
   })
 );
+export const invoices = pgTable("invoices", {
+  id: text("id").primaryKey(), // uuid
+  receipt: text("receipt").notNull().unique(), // human number: e.g., LW-2025-0042
+  customer_name: text("customer_name"),
+  customer_email: text("customer_email"),
+  customer_phone: text("customer_phone"),
+  amount_in_paise: integer("amount_in_paise").notNull(),
+  currency: text("currency").notNull().default("INR"),
+  provider: text("provider").notNull().default("mock"), // 'mock' | 'razorpay'
+  provider_invoice_id: text("provider_invoice_id"), // inv_* later
+  provider_short_url: text("provider_short_url"), // hosted page later
+  status: text("status").notNull().default("draft"), // draft/issued/paid/expired/cancelled/partially_paid
+  notes: jsonb("notes"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
 
 export type TripRequestActivity = typeof tripRequestActivities.$inferSelect;
 export type NewTripRequestActivity = typeof tripRequestActivities.$inferInsert;

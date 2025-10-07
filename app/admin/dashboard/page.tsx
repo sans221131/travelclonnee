@@ -5,6 +5,7 @@ import { tripRequests, activities, tripRequestActivities } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import DashboardHeader from "@/components/admin/DashboardHeader";
+import AdminNav from "@/components/admin/AdminNav";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -87,6 +88,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
+      <AdminNav />
       <DashboardHeader />
 
       <Suspense fallback={<DashboardLoading />}>

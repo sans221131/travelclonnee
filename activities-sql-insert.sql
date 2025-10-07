@@ -1,6 +1,48 @@
 -- SQL INSERT statements for activities table
 -- Copy and paste this into your Neon database console
 
+-- This INSERT is idempotent: if an activity with the same (destination_id, name)
+-- already exists (there's a unique index in the schema), the row will be skipped.
+-- That makes it safe to run this file multiple times.
+
+-- Create invoices table (if it doesn't exist) to match `db/schema.ts`'s `invoices` definition.
+-- Run this file as-is to create the table and then seed activities.
+CREATE TABLE IF NOT EXISTS invoices (
+	id text PRIMARY KEY,
+	receipt text NOT NULL UNIQUE,
+	customer_name text,
+	customer_email text,
+	customer_phone text,
+	amount_in_paise integer NOT NULL,
+	currency text NOT NULL DEFAULT 'INR',
+	provider text NOT NULL DEFAULT 'mock',
+	provider_invoice_id text,
+	provider_short_url text,
+	status text NOT NULL DEFAULT 'draft',
+	notes jsonb,
+	created_at timestamp without time zone DEFAULT now(),
+	updated_at timestamp without time zone DEFAULT now()
+);
+
+-- Optional: if you prefer a native uuid id and timestamptz, use the variant below instead
+-- (uncomment and run `CREATE EXTENSION IF NOT EXISTS pgcrypto;` first):
+-- CREATE TABLE IF NOT EXISTS invoices (
+--   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--   receipt text NOT NULL UNIQUE,
+--   customer_name text,
+--   customer_email text,
+--   customer_phone text,
+--   amount_in_paise integer NOT NULL,
+--   currency text NOT NULL DEFAULT 'INR',
+--   provider text NOT NULL DEFAULT 'mock',
+--   provider_invoice_id text,
+--   provider_short_url text,
+--   status text NOT NULL DEFAULT 'draft',
+--   notes jsonb,
+--   created_at timestamp with time zone DEFAULT now(),
+--   updated_at timestamp with time zone DEFAULT now()
+-- );
+
 INSERT INTO activities (destination_id, name, description, price, currency, review_count, image_url) VALUES
 
 -- Dubai Activities
@@ -87,3 +129,5 @@ INSERT INTO activities (destination_id, name, description, price, currency, revi
 ('ladakh', 'Leh Magnetic Hill & Monasteries', 'Visit the mysterious Magnetic Hill and ancient Buddhist monasteries including Hemis and Thiksey with stunning Ladakh landscapes.', 110.00, 'USD', 2890, '/images/ladakh.jpg'),
 ('ladakh', 'Pangong Lake High Altitude Adventure', 'Journey to the spectacular Pangong Lake at 14,000 feet altitude with changing colors and breathtaking mountain reflections.', 145.00, 'USD', 2340, '/images/ladakh.jpg'),
 ('ladakh', 'Nubra Valley Desert & Double Hump Camels', 'Explore the cold desert of Nubra Valley with unique double-hump Bactrian camel rides and sand dunes at high altitude.', 120.00, 'USD', 1890, '/images/ladakh.jpg');
+-- Skip inserting rows that would conflict with the unique index on (destination_id, name)
+ON CONFLICT ON CONSTRAINT activities_destination_name_unique DO NOTHING;

@@ -1,5 +1,6 @@
 // app/api/trip-requests/[id]/route.ts
-export const runtime = "edge"; // keep ONLY if your db client supports edge (neon-http, etc.)
+// Use nodejs runtime because this route imports the server DB client
+export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
