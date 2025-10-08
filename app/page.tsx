@@ -2,7 +2,7 @@
 // app/page.tsx
 import React from "react";
 import SiteHeader from "@/components/header/SiteHeader";
-import HeroStatic from "@/components/hero/HeroStatic";
+import { ScrollAnimation } from "@/components/hero/scroll-animation";
 
 // Use the actual, case-correct path for your file:
 import Carousel from "@/components/sections/carousel";
@@ -49,8 +49,11 @@ export default function HomePage() {
     <>
       <SiteHeader />
       <main className="bg-black">
-        {/* Section 1: Animated Hero */}
-        <HeroStatic />
+        <ScrollAnimation
+        animationPath="/animations/data.json"
+        pxPerFrame={24}
+        scrubAmount={1}
+      />
 
         {/* Section 2: Spotlight Carousel */}
         <Carousel
