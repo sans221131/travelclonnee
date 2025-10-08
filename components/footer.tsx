@@ -34,10 +34,10 @@ export default function SiteFooterMonochrome() {
           <div className="md:col-span-4">
             <div className="flex items-center gap-3">
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-xs tracking-widest text-white/80">
-                LW
+                AT
               </span>
               <span className="text-sm font-medium tracking-wide text-white/80">
-                LeafWay Solutions
+                Atlasdore Travel
               </span>
             </div>
 
@@ -45,6 +45,13 @@ export default function SiteFooterMonochrome() {
               Understated travel, engineered properly. Planning that respects your attention span
               and your calendar.
             </p>
+
+            <div className="mt-4 text-xs text-zinc-400 space-y-1">
+              <p className="font-semibold text-zinc-300">ATLASDORE TRAVEL PRIVATE LIMITED</p>
+              <p>Office No: S32, 2nd Floor</p>
+              <p>Al Ezz Tower, SBUT</p>
+              <p>Bhendi Bazaar, Mumbai 400 003</p>
+            </div>
 
             <form
               onSubmit={(e) => e.preventDefault()}
@@ -195,7 +202,7 @@ export default function SiteFooterMonochrome() {
         <div className="mt-12">
           <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="flex flex-col items-start justify-between gap-4 py-6 text-xs text-white/50 sm:flex-row sm:items-center">
-            <p id="footer-heading">© 2025 LeafWay Solutions. Crafted with care.</p>
+            <p id="footer-heading">© 2025 Atlasdore Travel Private Limited. All rights reserved.</p>
             <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
               <li>
                 <Link href="#privacy" className="transition hover:text-white">

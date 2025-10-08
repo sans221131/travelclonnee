@@ -1,7 +1,8 @@
 {
-  "name": "travel",
+  "name": "atlasdore-travel",
   "version": "0.1.0",
   "private": true,
+  "description": "ATLASDORE TRAVEL PRIVATE LIMITED - Official Website",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",

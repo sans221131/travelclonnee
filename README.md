@@ -1,3 +1,12 @@
+# Atlasdore Travel Website
+
+Official website for ATLASDORE TRAVEL PRIVATE LIMITED.
+
+**Company Information:**
+- Office No: S32, 2nd Floor
+- Al Ezz Tower, SBUT
+- Bhendi Bazaar, Mumbai 400 003
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

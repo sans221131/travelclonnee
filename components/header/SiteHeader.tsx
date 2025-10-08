@@ -25,11 +25,11 @@ export default function SiteHeader() {
               <span className="inline-block h-8 w-8 rounded bg-white/90" />
               {/* Mobile brand: visible only below sm */}
               <span className="sm:hidden text-white/90 font-semibold tracking-wide text-sm whitespace-nowrap">
-                LeafwayTravels
+                Atlasdore Travel
               </span>
               {/* Desktop/Tablet brand: visible from sm and up */}
               <span className="hidden sm:inline text-white/90 font-semibold tracking-wide">
-                LeafWay
+                Atlasdore Travel
               </span>
             </Link>
           </div>
