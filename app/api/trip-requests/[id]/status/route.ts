@@ -8,43 +8,35 @@ import { eq } from "drizzle-orm";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> | { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { status } = await request.json();
-    // support both Promise and plain object for params
-    const paramsResolved = await (context.params as any);
-    const { id } = paramsResolved;
-    
+    const { id } = await context.params;
+
     // Validate status
     const validStatuses = ["new", "contacted", "quoted", "closed", "archived"];
     if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        { error: "Invalid status" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
     // Update trip status
     const updatedTrip = await db
       .update(tripRequests)
-      .set({ 
+      .set({
         status,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
-  .where(eq(tripRequests.id, id))
+      .where(eq(tripRequests.id, id))
       .returning();
 
     if (updatedTrip.length === 0) {
-      return NextResponse.json(
-        { error: "Trip not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Trip not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      trip: updatedTrip[0] 
+    return NextResponse.json({
+      success: true,
+      trip: updatedTrip[0],
     });
   } catch (error) {
     console.error("Error updating trip status:", error);

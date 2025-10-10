@@ -1,8 +1,8 @@
 // drizzle.config.ts
-import type { Config } from "drizzle-kit";
+import { defineConfig } from "drizzle-kit";
 
-export default {
-  schema: "./db/schema.ts",          // CHANGED from ./src/db/schema.ts
+export default defineConfig({
+  schema: "./db/schema.ts", // CHANGED from ./src/db/schema.ts
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
@@ -10,4 +10,4 @@ export default {
   },
   verbose: true,
   strict: true,
-} satisfies Config;
+});
