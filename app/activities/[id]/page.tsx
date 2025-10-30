@@ -104,7 +104,9 @@ function parseSections(raw?: string) {
 }
 
 /** Short hero teaser. */
-function getHeroSnippetFromSections(sections: ReturnType<typeof parseSections>) {
+function getHeroSnippetFromSections(
+  sections: ReturnType<typeof parseSections>
+) {
   if (!sections.length) return "";
   const firstSec = sections[0];
   let snippet = firstSec.paragraphs[0] || "";
@@ -136,7 +138,10 @@ function cleanDestinationLabel(id?: string | null) {
 }
 function slugifyTitle(s?: string) {
   if (!s) return "section";
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 /** pull up to N highlights (prefer "What’s Included", else first bullets) */
@@ -147,21 +152,21 @@ function getHighlights(
   const prefer = sections.find((s) =>
     (s.title || "").toLowerCase().includes("include")
   );
-  const pool = prefer?.bullets?.length ? prefer.bullets : sections.flatMap((s) => s.bullets);
+  const pool = prefer?.bullets?.length
+    ? prefer.bullets
+    : sections.flatMap((s) => s.bullets);
   return pool.slice(0, n);
 }
 
 /* ----------------- page component ----------------- */
 
-export default async function ActivityDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { tripId?: string };
+export default async function ActivityDetailPage(props: {
+  // Next.js 15: params and searchParams are async
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ tripId?: string }>;
 }) {
-  const { id } = params;
-  const sp = searchParams ?? {};
+  const { id } = await props.params;
+  const sp = (await props.searchParams) ?? {};
   const tripId = sp.tripId;
 
   if (!id) notFound();
@@ -176,8 +181,12 @@ export default async function ActivityDetailPage({
 
   const highlights = getHighlights(sections, 6);
   const needToKnow =
-    sections.find((s) => (s.title || "").toLowerCase().includes("before you go")) ||
-    sections.find((s) => (s.title || "").toLowerCase().includes("good to know"));
+    sections.find((s) =>
+      (s.title || "").toLowerCase().includes("before you go")
+    ) ||
+    sections.find((s) =>
+      (s.title || "").toLowerCase().includes("good to know")
+    );
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -216,8 +225,18 @@ export default async function ActivityDetailPage({
             className="absolute left-6 top-6 z-20 rounded-full bg-black/55 p-3 text-white backdrop-blur-sm ring-1 ring-white/10 transition-all hover:bg-black/70"
             aria-label="Go back"
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" stroke="currentColor" fill="none">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              fill="none"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </Link>
 
@@ -258,7 +277,9 @@ export default async function ActivityDetailPage({
                       <span className="text-white">
                         {priceLabel(activity.price, activity.currency)}
                         {hasPrice && (
-                          <span className="ml-2 text-sm font-normal text-zinc-300">per person</span>
+                          <span className="ml-2 text-sm font-normal text-zinc-300">
+                            per person
+                          </span>
                         )}
                       </span>
                     </div>
@@ -313,7 +334,9 @@ export default async function ActivityDetailPage({
           {/* Highlights grid */}
           {highlights.length > 0 && (
             <section className="mb-8 rounded-2xl border border-white/10 bg-white/[0.06] p-5 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.7)]">
-              <h3 className="mb-3 text-sm font-semibold text-white">Highlights</h3>
+              <h3 className="mb-3 text-sm font-semibold text-white">
+                Highlights
+              </h3>
               <ul className="grid grid-cols-1 gap-3 text-[15px] leading-relaxed text-zinc-300 sm:grid-cols-2">
                 {highlights.map((h, i) => (
                   <li key={i} className="flex gap-3">
@@ -392,7 +415,9 @@ export default async function ActivityDetailPage({
                 })
               ) : (
                 <article className="rounded-2xl border border-white/10 bg-white/[0.06] p-6 text-zinc-300">
-                  <h2 className="mb-2 text-lg font-semibold text-white">About this experience</h2>
+                  <h2 className="mb-2 text-lg font-semibold text-white">
+                    About this experience
+                  </h2>
                   <p>Details coming soon.</p>
                 </article>
               )}
@@ -401,16 +426,24 @@ export default async function ActivityDetailPage({
             {/* RIGHT: Sticky price dock (sleeker) */}
             <aside className="space-y-6 flex flex-col justify-end">
               <div className="sticky bottom-6 rounded-2xl border border-white/10 bg-zinc-900/70 p-6 text-center shadow-[0_40px_120px_-25px_rgba(0,0,0,0.8)] ring-1 ring-blue-500/10 backdrop-blur">
-                <div className="text-[10px] uppercase tracking-wide text-zinc-400">From</div>
+                <div className="text-[10px] uppercase tracking-wide text-zinc-400">
+                  From
+                </div>
                 <div className="mt-1 text-3xl font-bold text-white">
                   {priceLabel(activity.price, activity.currency)}
                 </div>
                 {hasPrice && (
-                  <div className="text-[11px] text-zinc-400">per person (base entry)</div>
+                  <div className="text-[11px] text-zinc-400">
+                    per person (base entry)
+                  </div>
                 )}
 
-                <div className="mt-4 text-[11px] text-emerald-300">Instant confirmation</div>
-                <div className="text-[11px] text-zinc-400">Weekends / holidays fill fast</div>
+                <div className="mt-4 text-[11px] text-emerald-300">
+                  Instant confirmation
+                </div>
+                <div className="text-[11px] text-zinc-400">
+                  Weekends / holidays fill fast
+                </div>
 
                 <div className="mt-5">
                   {tripId ? (
@@ -439,34 +472,38 @@ export default async function ActivityDetailPage({
                 </div>
 
                 <p className="mt-4 text-[11px] leading-relaxed text-zinc-400">
-                  We reserve this for you, bundle it in your custom trip quote, and you decide later.
-                  No instant payment here.
+                  We reserve this for you, bundle it in your custom trip quote,
+                  and you decide later. No instant payment here.
                 </p>
               </div>
 
               {/* Need to know (replaces old Quick facts) */}
-              {needToKnow && (needToKnow.paragraphs.length > 0 || needToKnow.bullets.length > 0) && (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 shadow-[0_30px_80px_-10px_rgba(0,0,0,0.7)]">
-                  <h4 className="mb-3 text-sm font-semibold text-white">Need to know</h4>
-                  {needToKnow.paragraphs.length > 0 && (
-                    <div className="space-y-3 text-xs leading-relaxed text-zinc-300">
-                      {needToKnow.paragraphs.slice(0, 2).map((p, i) => (
-                        <p key={i}>{p}</p>
-                      ))}
-                    </div>
-                  )}
-                  {needToKnow.bullets.length > 0 && (
-                    <ul className="mt-3 space-y-2 text-xs text-zinc-300">
-                      {needToKnow.bullets.slice(0, 6).map((b, i) => (
-                        <li key={i} className="flex gap-2">
-                          <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400/80" />
-                          <span>{b}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
+              {needToKnow &&
+                (needToKnow.paragraphs.length > 0 ||
+                  needToKnow.bullets.length > 0) && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 shadow-[0_30px_80px_-10px_rgba(0,0,0,0.7)]">
+                    <h4 className="mb-3 text-sm font-semibold text-white">
+                      Need to know
+                    </h4>
+                    {needToKnow.paragraphs.length > 0 && (
+                      <div className="space-y-3 text-xs leading-relaxed text-zinc-300">
+                        {needToKnow.paragraphs.slice(0, 2).map((p, i) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+                    )}
+                    {needToKnow.bullets.length > 0 && (
+                      <ul className="mt-3 space-y-2 text-xs text-zinc-300">
+                        {needToKnow.bullets.slice(0, 6).map((b, i) => (
+                          <li key={i} className="flex gap-2">
+                            <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400/80" />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
             </aside>
           </div>
         </div>
@@ -476,7 +513,9 @@ export default async function ActivityDetailPage({
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-zinc-950/85 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/60 p-3 sm:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <div className="text-sm text-white">
-            <div className="text-[11px] uppercase tracking-wide text-zinc-400">From</div>
+            <div className="text-[11px] uppercase tracking-wide text-zinc-400">
+              From
+            </div>
             <div className="text-lg font-semibold">
               {priceLabel(activity.price, activity.currency)}
             </div>
