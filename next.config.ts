@@ -5,21 +5,27 @@ const nextConfig: NextConfig = {
   images: {
     // allow loading images from the CDN(s) used by the app (add more hosts if needed)
     remotePatterns: [
-      { protocol: "https", hostname: "cdn.example.com", port: "", pathname: "/**" },
-      { protocol: "https", hostname: "via.placeholder.com", port: "", pathname: "/**" },
+      {
+        protocol: "https",
+        hostname: "cdn.example.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+        port: "",
+        pathname: "/**",
+      },
       // Allow Cloudinary images (used for activity images)
-      { protocol: "https", hostname: "res.cloudinary.com", port: "", pathname: "/**" },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };
 
 export default nextConfig;
-
-// Only initialize OpenNext Cloudflare dev tools in development
-if (process.env.NODE_ENV === "development") {
-  // Dynamic import to avoid bundling this in production builds
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  import("@opennextjs/cloudflare").then(({ initOpenNextCloudflareForDev }) => {
-    initOpenNextCloudflareForDev();
-  });
-}

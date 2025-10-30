@@ -5,10 +5,13 @@
   "description": "ATLASDORE TRAVEL PRIVATE LIMITED - Official Website",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "drizzle:generate": "drizzle-kit generate",
-    "drizzle:push": "drizzle-kit push"
+    "drizzle:push": "drizzle-kit push",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
