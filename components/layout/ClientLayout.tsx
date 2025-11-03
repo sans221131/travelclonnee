@@ -8,8 +8,11 @@ import { usePathname } from "next/navigation";
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Show cart only on activities and trip receipt pages
-  const showCart = pathname.includes('/activities') || pathname.includes('/trip/receipt');
+  // Show cart on destinations, activities, trip receipt, and checkout pages
+  const showCart = pathname.includes('/destinations') || 
+                   pathname.includes('/activities') || 
+                   pathname.includes('/trip/receipt') ||
+                   pathname.includes('/checkout');
 
   return (
     <CartProvider>

@@ -1,0 +1,714 @@
+// components/trip/TripBuilderLite.tsx
+"use client";
+
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import SectionHeader from "@/components/sections/SectionHeader";
+import { useCart } from "@/contexts/CartContext";
+import TripSuccessModal from "./TripSuccessModal";
+
+// Pull the same curated choices you use in TripBuilderReceipt
+import {
+  AIRLINES,
+  DESTINATIONS as DESTINATION_CHOICES,
+  NATIONALITIES,
+  ORIGIN_CITIES,
+  HOTEL_PREFERENCES,
+  FLIGHT_CLASSES,
+  VISA_STATUS,
+  DESTINATIONS, // used for label mapping
+} from "@/lib/trip-builder/guardrails";
+
+/* ---------------- Types ---------------- */
+type Answers = {
+  from?: string; // "City, Country"
+  destination?: string; // "City, Country"
+  startDate?: string; // ISO yyyy-mm-dd
+  endDate?: string; // ISO yyyy-mm-dd
+  adults?: number;
+  children?: number;
+
+  passengerName?: string;
+  passengerSurname?: string;
+  phoneCountryCode?: string; // "+"
+  phoneNumber?: string;
+  email?: string;
+  nationality?: string;
+  airlinePref?: string;
+  hotelPref?: string;
+  flightClass?: string;
+  visaStatus?: string;
+
+  seededDestination?: string;
+  seedPromptShown?: boolean;
+};
+
+type StepId =
+  | "fromLocation"
+  | "dates"
+  | "travellers"
+  | "passengerName"
+  | "phoneNumber"
+  | "email"
+  | "nationality"
+  | "airline"
+  | "hotel"
+  | "flightClass"
+  | "visa"
+  | "summary";
+
+/* Simplified flow - destination auto-filled from cart activities */
+const STEPS: StepId[] = [
+  "fromLocation",
+  "dates",
+  "travellers",
+  "passengerName",
+  "phoneNumber",
+  "email",
+  "nationality",
+  "airline",
+  "hotel",
+  "flightClass",
+  "visa",
+  "summary",
+];
+
+/* ---------------- Validation Patterns ---------------- */
+const VALIDATION_PATTERNS = {
+  email: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+  phoneCountryCode: /^\+[1-9]\d{0,2}$/,
+  phoneNumber: /^\d{6,15}$/,
+  name: /^[a-zA-Z\s\-'\.]+$/,
+} as const;
+
+const VALIDATION_LIMITS = {
+  email: { min: 5, max: 254 },
+  name: { min: 2, max: 50 },
+  phoneNumber: { min: 6, max: 15 },
+  phoneCountryCode: { min: 2, max: 4 },
+  adults: { min: 1, max: 999 },
+  children: { min: 0, max: 999 },
+  totalTravelers: 999,
+  tripDurationDays: 365,
+  futureYears: 2,
+} as const;
+
+/* ---------------- Geolocation Hook ---------------- */
+function useGeolocation() {
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLoading(false);
+      },
+      (error) => {
+        let errorMessage = "Unable to retrieve location";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied by user";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information unavailable";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out";
+            break;
+        }
+        setError(errorMessage);
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      }
+    );
+  };
+
+  return { location, loading, error, getCurrentLocation };
+}
+
+/* ---------------- Location Matching ---------------- */
+// Approximate coordinates for major cities (for demo purposes)
+const CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  "Mumbai, India": { lat: 19.0760, lon: 72.8777 },
+  "Delhi, India": { lat: 28.7041, lon: 77.1025 },
+  "Bangalore, India": { lat: 12.9716, lon: 77.5946 },
+  "Hyderabad, India": { lat: 17.3850, lon: 78.4867 },
+  "Chennai, India": { lat: 13.0827, lon: 80.2707 },
+  "Kolkata, India": { lat: 22.5726, lon: 88.3639 },
+  "Pune, India": { lat: 18.5204, lon: 73.8567 },
+  "Ahmedabad, India": { lat: 23.0225, lon: 72.5714 },
+  "Jaipur, India": { lat: 26.9124, lon: 75.7873 },
+  "Lucknow, India": { lat: 26.8467, lon: 80.9462 },
+  "Kanpur, India": { lat: 26.4499, lon: 80.3319 },
+  "Nagpur, India": { lat: 21.1458, lon: 79.0882 },
+  "Indore, India": { lat: 22.7196, lon: 75.8577 },
+  "Thane, India": { lat: 19.2183, lon: 72.9781 },
+  "Bhopal, India": { lat: 23.2599, lon: 77.4126 },
+  "Visakhapatnam, India": { lat: 17.6868, lon: 83.2185 },
+  "Pimpri-Chinchwad, India": { lat: 18.6298, lon: 73.7997 },
+  "Patna, India": { lat: 25.5941, lon: 85.1376 },
+  "Vadodara, India": { lat: 22.3072, lon: 73.1812 },
+  "Ghaziabad, India": { lat: 28.6692, lon: 77.4538 },
+  "Ludhiana, India": { lat: 30.9010, lon: 75.8573 },
+  "Agra, India": { lat: 27.1767, lon: 78.0081 },
+  "Nashik, India": { lat: 19.9975, lon: 73.7898 },
+  "Faridabad, India": { lat: 28.4089, lon: 77.3178 },
+  "Meerut, India": { lat: 28.9845, lon: 77.7064 },
+  "Rajkot, India": { lat: 22.3039, lon: 70.8022 },
+  "Kalyan-Dombivali, India": { lat: 19.2403, lon: 73.1305 },
+  "Vasai-Virar, India": { lat: 19.4912, lon: 72.8054 },
+  "Varanasi, India": { lat: 25.3176, lon: 82.9739 },
+  "Srinagar, India": { lat: 34.0837, lon: 74.7973 },
+  "New York, USA": { lat: 40.7128, lon: -74.0060 },
+  "London, UK": { lat: 51.5074, lon: -0.1278 },
+  "Dubai, UAE": { lat: 25.2048, lon: 55.2708 },
+  "Singapore, Singapore": { lat: 1.3521, lon: 103.8198 },
+  "Tokyo, Japan": { lat: 35.6762, lon: 139.6503 },
+  "Bangkok, Thailand": { lat: 13.7563, lon: 100.5018 },
+  "Bali, Indonesia": { lat: -8.3405, lon: 115.0920 },
+  "Istanbul, Turkey": { lat: 41.0082, lon: 28.9784 },
+  "Maldives, Maldives": { lat: 3.2028, lon: 73.2207 },
+  "Phuket, Thailand": { lat: 7.8804, lon: 98.3923 },
+  "Doha, Qatar": { lat: 25.2760, lon: 51.5200 },
+  "Paris, France": { lat: 48.8566, lon: 2.3522 },
+  "Switzerland": { lat: 46.8182, lon: 8.2275 },
+  "Rajasthan, India": { lat: 27.0238, lon: 74.2179 },
+  "Kerala, India": { lat: 10.8505, lon: 76.2711 },
+  "Ladakh, India": { lat: 34.1526, lon: 77.5771 },
+  "Himachal Pradesh, India": { lat: 31.1048, lon: 77.1734 },
+};
+
+// Calculate distance between two coordinates using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Find closest city from available options
+function findClosestCity(userLat: number, userLon: number, availableCities: ReadonlyArray<string>): string | null {
+  let closestCity = null;
+  let minDistance = Infinity;
+
+  for (const city of availableCities) {
+    const coords = CITY_COORDINATES[city];
+    if (coords) {
+      const distance = calculateDistance(userLat, userLon, coords.lat, coords.lon);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCity = city;
+      }
+    }
+  }
+
+  // Only return if within reasonable distance (500km)
+  return minDistance <= 500 ? closestCity : null;
+}
+
+/* ---------------- Helpers ---------------- */
+function fmtDate(iso?: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function fmtDateShort(iso?: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+// map labels like "Dubai, UAE" or "Dubai" back to canonical label
+const DESTINATION_LABEL_TO_ID = DESTINATIONS.reduce<Record<string, string>>(
+  (acc, dest) => {
+    acc[dest.toLowerCase()] = dest;
+    const city = dest.split(",")[0].toLowerCase();
+    acc[city] = dest;
+    return acc;
+  },
+  {}
+);
+
+function destinationSlugFromLabel(label?: string) {
+  if (!label) return undefined;
+  const key = label.toLowerCase().trim();
+  if (DESTINATION_LABEL_TO_ID[key]) return DESTINATION_LABEL_TO_ID[key];
+  const parts = label.split(",").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const recomposedKey = `${parts[0].toLowerCase()}, ${parts[1].toLowerCase()}`;
+    return DESTINATION_LABEL_TO_ID[recomposedKey];
+  }
+  return undefined;
+}
+
+/* ---------------- Component ---------------- */
+export default function TripBuilderLite() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { activities: cartActivities, clearCart } = useCart();
+
+  const [idx, setIdx] = useState(0);
+  const [maxVisited, setMaxVisited] = useState(0); // allow pip jump back, not forward
+  const [answers, setAnswers] = useState<Answers>({
+    adults: 1,
+    children: 0,
+    seedPromptShown: false,
+    phoneCountryCode: "+",
+  });
+
+  // Auto-populate destination from cart activities
+  useEffect(() => {
+    if (cartActivities.length > 0 && !answers.destination) {
+      // Get the most common destination from cart activities
+      const destinations = cartActivities.map(a => a.destinationId);
+      const destinationCounts: Record<string, number> = {};
+      destinations.forEach(dest => {
+        destinationCounts[dest] = (destinationCounts[dest] || 0) + 1;
+      });
+      
+      // Find the destination with the most activities
+      const primaryDestination = Object.keys(destinationCounts).reduce((a, b) => 
+        destinationCounts[a] > destinationCounts[b] ? a : b
+      );
+      
+      // Convert destination ID to proper format (e.g., "dubai" -> "Dubai, UAE")
+      const formattedDestination = primaryDestination
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      setAnswers(prev => ({
+        ...prev,
+        destination: formattedDestination,
+      }));
+      
+      console.log('Auto-populated destination from cart:', formattedDestination);
+    }
+  }, [cartActivities, answers.destination]);
+
+  const steps = STEPS;
+  const current = steps[idx];
+
+  // submission state
+  const [submitting, setSubmitting] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  
+  // Modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Geolocation hook
+  const { location, loading: locationLoading, error: locationError, getCurrentLocation } = useGeolocation();
+
+  // Auto-fill origin when location is detected
+  useEffect(() => {
+    if (location && !answers.from) {
+      const closestCity = findClosestCity(location.latitude, location.longitude, ORIGIN_CITIES);
+      if (closestCity) {
+        setAnswers((a) => ({ ...a, from: closestCity }));
+      }
+    }
+  }, [location, answers.from]);
+
+  // Attempt automatic location detection on first visit to fromLocation step
+  useEffect(() => {
+    if (current === "fromLocation" && !answers.from && !location && !locationLoading && !locationError) {
+      // Small delay to avoid immediate popup on page load
+      const timer = setTimeout(() => {
+        getCurrentLocation();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [current, answers.from, location, locationLoading, locationError, getCurrentLocation]);
+
+  const hasAll = useMemo(() => {
+    return Boolean(
+      answers.from &&
+        (answers.destination || answers.seededDestination) &&
+        answers.nationality &&
+        answers.startDate &&
+        answers.endDate &&
+        answers.passengerName?.trim() &&
+        answers.passengerSurname?.trim() &&
+        (answers.phoneCountryCode || "").trim() &&
+        (answers.phoneNumber || "").trim() &&
+        (answers.email || "").trim() &&
+        answers.airlinePref &&
+        answers.hotelPref &&
+        answers.flightClass &&
+        answers.visaStatus
+    );
+  }, [answers]);
+
+  // keyboard: Enter to proceed/submit (arrow navigation disabled)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        if (current === "summary") {
+          if (hasAll) {
+            e.preventDefault();
+            submitRequest();
+          }
+        } else if (canProceed()) {
+          e.preventDefault();
+          goNext();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, idx, answers, hasAll, submitting]);
+
+  function canProceed(): boolean {
+    switch (current) {
+      case "fromLocation":
+        return !!answers.from;
+      case "dates":
+        if (!answers.startDate || !answers.endDate) return false;
+        const today = new Date().toISOString().split('T')[0];
+        const maxDate = new Date();
+        maxDate.setFullYear(maxDate.getFullYear() + 2); // Max 2 years in future
+        const maxDateStr = maxDate.toISOString().split('T')[0];
+        const tripDuration = (new Date(answers.endDate).getTime() - new Date(answers.startDate).getTime()) / (1000 * 60 * 60 * 24);
+        
+        return Boolean(
+          answers.startDate >= today && // Not in the past
+          answers.endDate >= answers.startDate && // End after start
+          answers.startDate <= maxDateStr && // Within 2 years
+          answers.endDate <= maxDateStr && // Within 2 years
+          tripDuration <= 365 // Max 1 year trip duration
+        );
+      case "travellers":
+        const adults = answers.adults ?? 0;
+        const children = answers.children ?? 0;
+        // Only ensure at least 1 adult, no upper limits
+        return adults >= 1 && children >= 0;
+      case "passengerName":
+        const name = (answers.passengerName || "").trim();
+        const surname = (answers.passengerSurname || "").trim();
+        // Name and surname: 2-50 characters each, letters, spaces, hyphens, apostrophes only
+        return name.length >= 2 && 
+               name.length <= 50 &&
+               surname.length >= 1 &&
+               surname.length <= 50 &&
+               /^[a-zA-Z\s\-'\.]+$/.test(name) &&
+               /^[a-zA-Z\s\-'\.]+$/.test(surname) &&
+               !/^\s|\s$/.test(name) &&
+               !/^\s|\s$/.test(surname);
+      case "phoneNumber":
+        const countryCode = (answers.phoneCountryCode || "").trim();
+        const phoneNumber = (answers.phoneNumber || "").replace(/\s+/g, "");
+        // Country code: +1 to +999, Phone: 6-15 digits
+        return Boolean(
+          /^\+[1-9]\d{0,2}$/.test(countryCode) &&
+          /^\d{6,15}$/.test(phoneNumber)
+        );
+      case "email":
+        const email = (answers.email || "").trim();
+        // RFC 5322 compliant email with length limits (5-254 chars)
+        return email.length >= 5 && 
+               email.length <= 254 &&
+               /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+      case "nationality":
+        return !!answers.nationality;
+      case "airline":
+        return !!answers.airlinePref;
+      case "hotel":
+        return !!answers.hotelPref;
+      case "flightClass":
+        return !!answers.flightClass;
+      case "visa":
+        return !!answers.visaStatus;
+      case "summary":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  function goNext() {
+    if (!canProceed()) return;
+
+    setIdx((i) => {
+      const ni = Math.min(i + 1, steps.length - 1);
+      setMaxVisited((v) => Math.max(v, ni));
+      return ni;
+    });
+  }
+
+  function goPrev() {
+    setIdx((i) => Math.max(i - 1, 0));
+  }
+
+  // Allow jumping via pips to any visited step
+  function jumpTo(i: number) {
+    if (i <= maxVisited) setIdx(i);
+  }
+
+  // Focus management - only focus if user is already within the trip builder section
+  const questionRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const tripBuilderSection = document.getElementById("trip-builder");
+    if (tripBuilderSection) {
+      const rect = tripBuilderSection.getBoundingClientRect();
+      const isInView = rect.top >= 0 && rect.top < window.innerHeight;
+      if (isInView && questionRef.current) {
+        questionRef.current.focus({ preventScroll: true });
+      }
+    }
+  }, [current]);
+
+  // Simple setter without auto-advance
+  function setAnswer<K extends keyof Answers>(key: K, value: Answers[K]) {
+    setAnswers((a) => ({ ...a, [key]: value }));
+  }
+
+  async function submitRequest() {
+    if (!hasAll || submitting === "saving") return;
+
+    setSubmitting("saving");
+
+    // Combine first and last name into passengerName field
+    const fullName = `${answers.passengerName!} ${answers.passengerSurname!}`.trim();
+    
+    const payload = {
+      origin: answers.from!,
+      destination: answers.destination || answers.seededDestination || "",
+      nationality: answers.nationality!,
+      startDate: answers.startDate!,
+      endDate: answers.endDate!,
+      adults: answers.adults ?? 1,
+      kids: answers.children ?? 0,
+      airlinePreference: answers.airlinePref!,
+      hotelPreference: answers.hotelPref!,
+      flightClass: answers.flightClass!,
+      visaStatus: answers.visaStatus!,
+      passengerName: fullName,
+      email: answers.email!,
+      phoneCountryCode: answers.phoneCountryCode!,
+      phoneNumber: answers.phoneNumber!,
+    };
+
+    try {
+      const res = await fetch("/api/trip-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const json = await res.json().catch(() => null);
+      const createdId =
+        json && typeof json === "object"
+          ? (json as { id?: string }).id ?? null
+          : null;
+
+      // Associate selected activities from cart with this trip
+      if (createdId && cartActivities.length > 0) {
+        console.log('Associating cart activities with trip:', createdId);
+        console.log('Cart activities:', cartActivities);
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const activity of cartActivities) {
+          console.log(`Associating activity ${activity.id} (${activity.name}) with trip ${createdId}`);
+          
+          try {
+            const response = await fetch(`/api/trip-requests/${createdId}/activities`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ activityId: activity.id })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              console.log(`✓ Successfully associated activity ${activity.id}:`, result);
+              successCount++;
+            } else {
+              const errorText = await response.text();
+              console.error(`✗ Failed to associate activity ${activity.id}:`, response.status, errorText);
+              errorCount++;
+            }
+          } catch (error) {
+            console.error(`✗ Error associating activity ${activity.id}:`, error);
+            errorCount++;
+          }
+        }
+        
+        console.log(`Activity association summary: ${successCount} success, ${errorCount} errors out of ${cartActivities.length} total`);
+        
+        // Clear cart if all activities were successfully associated
+        if (errorCount === 0 && successCount > 0) {
+          clearCart();
+          console.log('✓ Cart cleared after successful activity association');
+        } else if (errorCount > 0) {
+          console.warn('⚠ Some activities failed to associate. Cart not cleared.');
+        }
+      } else if (cartActivities.length === 0) {
+        console.log('No activities in cart to associate with trip');
+      }
+
+      setSubmitting("saved");
+
+      // Show success modal instead of redirecting
+      setShowSuccessModal(true);
+      
+    } catch {
+      setSubmitting("error");
+    }
+  }
+
+  // Basic swipe navigation for mobile
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.changedTouches[0].clientX;
+    touchEndX.current = null;
+  }
+  function onTouchMove(e: React.TouchEvent) {
+    touchEndX.current = e.changedTouches[0].clientX;
+  }
+  function onTouchEnd() {
+    if (touchStartX.current == null || touchEndX.current == null) return;
+    const dx = touchEndX.current - touchStartX.current;
+    if (Math.abs(dx) > 48) {
+      if (dx > 0) {
+        // Swipe right -> go back (but not from first step)
+        if (idx > 0) goPrev();
+      } else if (canProceed()) {
+        // Swipe left -> go forward (but not from last step or if can't proceed)
+        if (idx < steps.length - 1) goNext();
+      }
+    }
+  }
+
+  return (
+    <section
+      id="trip-builder"
+      aria-labelledby="tripbuilder-heading"
+      className="relative isolate w-full bg-zinc-950 text-zinc-100 overflow-x-hidden"
+      // dvh avoids iOS URL bar jump; safe-area padding improves tap targets
+      style={{
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 16px)",
+      }}
+    >
+      {/* Vignette + linear glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(1200px_500px_at_20%_-10%,rgba(255,255,255,0.08)_0%,transparent_60%)]"
+      />
+      <div className="absolute inset-x-0 top-1/2 -z-10 h-32 overflow-hidden pointer-events-none">
+        <div className="glowbar mx-auto h-32 w-[135%]" />
+      </div>
+
+      <div className="w-full max-w-none px-4 pt-4 pb-4 sm:px-4 sm:pt-6 sm:pb-6 md:pt-6 md:pb-6 md:max-w-2xl lg:max-w-4xl md:mx-auto">
+        <div className="relative w-full rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-950/60 to-zinc-900/60 p-0.5 backdrop-blur">
+          <div className="relative rounded-xl sm:rounded-2xl bg-zinc-950/60 p-3 sm:p-4 md:p-5">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl ring-1 ring-white/10 [box-shadow:0_0_0_1px_rgba(255,255,255,0.04),0_0_40px_2px_rgba(180,180,255,0.08)_inset]"
+            />
+
+            {/* Progress (clickable for visited steps) */}
+            <ProgressPips
+              total={steps.length}
+              index={idx}
+              onJump={jumpTo}
+              maxVisited={maxVisited}
+            />
+
+            <div className="mx-auto mt-2 w-full sm:max-w-md md:max-w-lg lg:max-w-2xl sm:mt-3 md:mt-4">
+              <div
+                ref={questionRef}
+                tabIndex={-1}
+                aria-live="polite"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                className={[
+                  "relative rounded-lg sm:rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4 md:p-5",
+                  "overflow-visible sm:overflow-y-auto hide-scrollbar overscroll-contain",
+                  "pb-4 sm:pb-6 question-frame",
+                ].join(" ")}
+              >
+                <div className="grid w-full gap-2 sm:gap-3 md:gap-4">
+                  {current === "fromLocation" && (
+                    <StepShell
+                      title="Where are you traveling from?"
+                    >
+
+
+                      {/* Mobile: dropdown select */}
+                      <div className="sm:hidden">
+                        <Labeled field="origin" label="Origin">
+                          <select
+                            id="origin"
+                            className="input"
+                            value={answers.from ?? ""}
+                            onChange={(e) => setAnswer("from", e.target.value)}
+                          >
+                            <option value="" disabled>
+                              Select your traveling point
+                            </option>
+                            {ORIGIN_CITIES.map((city) => (
+                              <option key={city} value={city}>
+                                {city}
+                              </option>
+                            ))}
+                          </select>
+                        </Labeled>
+                      </div>
+
+                      {/* Desktop: grid of choices */}
+                      <div className="hidden sm:block">
+                        <ChoiceGrid
+                          options={ORIGIN_CITIES}
+                          value={answers.from}
+                          onChange={(v) => setAnswer("from", v)}
+                        />
+                      </div>
+                    </StepShell>
+                  )}

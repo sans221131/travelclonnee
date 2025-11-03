@@ -18,7 +18,6 @@ import RunwayBands from "@/components/how-it-works/DigitalDockingDivs";
 
 // NEW: Smart FAQ (client)
 import SmartFAQ from "@/components/smart-faq/SmartFAQ";
-import TripBuilderWrapper from "@/components/trip/TripBuilderWrapper";
 
 type SectionProps = {
   id: string;
@@ -166,11 +165,7 @@ export default function HomePage() {
         />
 
         {/* Section 3: How It Works — GSAP Motion Path */}
-        <TripBuilderWrapper />
-
-        {/* Section 4: Trip Builder Lite */}
-       
-         <RunwayBands />
+        <RunwayBands />
 
         {/* Section 5: Have an Invoice?  — NOT full screen */}
         {/* Replaces the old FullScreenSection so it isn't 100svh. */}

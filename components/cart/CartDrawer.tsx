@@ -10,7 +10,13 @@ export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [countdown, setCountdown] = useState(5);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const priceLabel = (price: number | undefined, currency: string | undefined) => {
     if (price == null) return "Price on request";
@@ -77,6 +83,11 @@ export default function CartDrawer() {
         </div>
       </div>
     );
+  }
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!isMounted) {
+    return null;
   }
 
   return (
@@ -183,10 +194,13 @@ export default function CartDrawer() {
                     Clear All
                   </button>
                   <button
-                    onClick={handleConfirmActivities}
-                    className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push('/checkout');
+                    }}
+                    className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 py-3 font-medium text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-900/30"
                   >
-                    Confirm Activities
+                    Proceed to Trip Builder
                   </button>
                 </div>
               )}

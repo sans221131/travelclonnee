@@ -313,51 +313,14 @@ export default function Carousel({
     centerPill(clamped);
   };
 
-  // Handle destination selection and scroll to trip builder
+  // Handle destination selection - navigate to destination page
   const handleDestinationSelect = (itemId: string, delayScrolling = false) => {
-    const destination = CAROUSEL_TO_DESTINATION_MAP[itemId];
-    if (destination) {
-      const selectedItem = items.find((item) => item.id === itemId);
-
-      // Update URL with selected destination
-      const url = new URL(window.location.href);
-      url.searchParams.set("destination", destination);
-      window.history.pushState({}, "", url.toString());
-
-      // Show temporary confirmation
-      const indicator = document.createElement("div");
-      indicator.innerHTML = `
-        <div class="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg border border-green-500 animate-pulse">
-          ✓ Selected ${selectedItem?.title || destination}
-        </div>
-      `;
-      document.body.appendChild(indicator);
-
-      setTimeout(() => {
-        if (indicator.parentNode) {
-          document.body.removeChild(indicator);
-        }
-      }, 2000);
-
-      // Calculate delay based on whether we need to wait for animation
-      const scrollDelay = delayScrolling ? TRAVEL_MAX + 300 : 500; // Wait for max animation time + buffer
-
-      // Scroll to trip builder section smoothly after animation completes
-      setTimeout(() => {
-        const tripBuilderSection = document.getElementById("trip-builder");
-        if (tripBuilderSection) {
-          tripBuilderSection.scrollIntoView({ 
-            behavior: "smooth",
-            block: "start"
-          });
-        }
-      }, scrollDelay);
-
-      // Dispatch custom event to notify trip builder component
-      window.dispatchEvent(new CustomEvent('destinationSelected', {
-        detail: { destination, itemId }
-      }));
-    }
+    // Navigate to destination page after animation completes if needed
+    const navigateDelay = delayScrolling ? TRAVEL_MAX + 100 : 0;
+    
+    setTimeout(() => {
+      window.location.href = `/destinations/${itemId}`;
+    }, navigateDelay);
   };
 
   const handleImageLoad = (imageId: string) => {

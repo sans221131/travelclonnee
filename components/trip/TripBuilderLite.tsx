@@ -5,6 +5,7 @@ import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SectionHeader from "@/components/sections/SectionHeader";
+import { useCart } from "@/contexts/CartContext";
 
 // Pull the same curated choices you use in TripBuilderReceipt
 import {
@@ -44,8 +45,6 @@ type Answers = {
 
 type StepId =
   | "fromLocation"
-  | "destinationSeed"
-  | "destinationSelect"
   | "dates"
   | "travellers"
   | "passengerName"
@@ -58,11 +57,9 @@ type StepId =
   | "visa"
   | "summary";
 
-/* Keep flow identical to TripBuilderReceipt */
+/* Simplified flow - destination auto-filled from cart activities */
 const STEPS: StepId[] = [
   "fromLocation",
-  "destinationSeed",
-  "destinationSelect",
   "dates",
   "travellers",
   "passengerName",
@@ -288,6 +285,7 @@ function destinationSlugFromLabel(label?: string) {
 export default function TripBuilderLite() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { activities: cartActivities, clearCart } = useCart();
 
   const [idx, setIdx] = useState(0);
   const [maxVisited, setMaxVisited] = useState(0); // allow pip jump back, not forward
@@ -298,49 +296,37 @@ export default function TripBuilderLite() {
     phoneCountryCode: "+",
   });
 
-  // Handle carousel destination selection from URL parameters
+  // Auto-populate destination from cart activities
   useEffect(() => {
-    const selectedDestination = searchParams.get('destination');
-    if (selectedDestination && DESTINATIONS.includes(selectedDestination as any)) {
+    if (cartActivities.length > 0 && !answers.destination) {
+      // Get the most common destination from cart activities
+      const destinations = cartActivities.map(a => a.destinationId);
+      const destinationCounts: Record<string, number> = {};
+      destinations.forEach(dest => {
+        destinationCounts[dest] = (destinationCounts[dest] || 0) + 1;
+      });
+      
+      // Find the destination with the most activities
+      const primaryDestination = Object.keys(destinationCounts).reduce((a, b) => 
+        destinationCounts[a] > destinationCounts[b] ? a : b
+      );
+      
+      // Convert destination ID to proper format (e.g., "dubai" -> "Dubai, UAE")
+      const formattedDestination = primaryDestination
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
       setAnswers(prev => ({
         ...prev,
-        seededDestination: selectedDestination,
-        seedPromptShown: false,
+        destination: formattedDestination,
       }));
+      
+      console.log('Auto-populated destination from cart:', formattedDestination);
     }
-  }, [searchParams]);
+  }, [cartActivities, answers.destination]);
 
-  // Listen for destination selection events from carousel
-  useEffect(() => {
-    const handleDestinationSelected = (event: CustomEvent) => {
-      const { destination } = event.detail;
-      if (destination && DESTINATIONS.includes(destination as any)) {
-        setAnswers(prev => ({
-          ...prev,
-          seededDestination: destination,
-          seedPromptShown: false,
-        }));
-        
-        // Reset to first step to show the seeded destination flow
-        setIdx(0);
-        setMaxVisited(0);
-      }
-    };
-
-    window.addEventListener('destinationSelected', handleDestinationSelected as EventListener);
-    return () => {
-      window.removeEventListener('destinationSelected', handleDestinationSelected as EventListener);
-    };
-  }, []);
-
-  // Determine current step, but skip destinationSeed if nothing is seeded
-  const steps = useMemo(() => {
-    if (!answers.seededDestination) {
-      return STEPS.filter((s) => s !== "destinationSeed");
-    }
-    return STEPS;
-  }, [answers.seededDestination]);
-
+  const steps = STEPS;
   const current = steps[idx];
 
   // submission state
@@ -415,11 +401,6 @@ export default function TripBuilderLite() {
     switch (current) {
       case "fromLocation":
         return !!answers.from;
-      case "destinationSeed":
-        // User must either keep the seeded destination or select a new one
-        return !!answers.destination;
-      case "destinationSelect":
-        return !!answers.destination;
       case "dates":
         if (!answers.startDate || !answers.endDate) return false;
         const today = new Date().toISOString().split('T')[0];
@@ -486,25 +467,6 @@ export default function TripBuilderLite() {
   function goNext() {
     if (!canProceed()) return;
 
-    // special routing to mirror receipt flow nuances
-    if (current === "fromLocation") {
-      const next = answers.seededDestination
-        ? "destinationSeed"
-        : "destinationSelect";
-      const to = steps.indexOf(next);
-      setIdx(to);
-      setMaxVisited((v) => Math.max(v, to));
-      return;
-    }
-    if (current === "destinationSeed") {
-      // Instead of just returning, advance to the next step after destinationSeed
-      setIdx((i) => {
-        const ni = Math.min(i + 1, steps.length - 1);
-        setMaxVisited((v) => Math.max(v, ni));
-        return ni;
-      });
-      return;
-    }
     setIdx((i) => {
       const ni = Math.min(i + 1, steps.length - 1);
       setMaxVisited((v) => Math.max(v, ni));
@@ -539,49 +501,23 @@ export default function TripBuilderLite() {
     setAnswers((a) => ({ ...a, [key]: value }));
   }
 
-  // "Keep seeded destination?" actions
-  function keepSeeded() {
-    if (!answers.seededDestination) return;
-    setAnswers((a) => ({
-      ...a,
-      destination: a.seededDestination,
-      seededDestination: undefined,
-      seedPromptShown: true,
-    }));
-    // Use normal progression logic instead of jumping to dates
-    setTimeout(() => {
-      setIdx((i) => {
-        const ni = Math.min(i + 1, steps.length - 1);
-        setMaxVisited((v) => Math.max(v, ni));
-        return ni;
-      });
-    }, 100);
-  }
-  function changeDestination() {
-    setAnswers((a) => ({
-      ...a,
-      seededDestination: undefined,
-      destination: undefined, // Clear any existing destination selection
-      seedPromptShown: true,
-    }));
-    
-    // Calculate the new steps array after clearing seeded destination
-    const newSteps = STEPS.filter((s) => s !== "destinationSeed");
-    const to = newSteps.indexOf("destinationSelect");
-    
-    if (to >= 0) {
-      setTimeout(() => {
-        setIdx(to);
-        setMaxVisited((v) => Math.max(v, to));
-      }, 100);
-    }
-  }
-
   async function submitRequest() {
-    if (!hasAll || submitting === "saving") return;
+    console.log('🚀 submitRequest called');
+    console.log('hasAll:', hasAll);
+    console.log('submitting:', submitting);
+    
+    if (!hasAll || submitting === "saving") {
+      console.log('❌ Submission blocked:', { hasAll, submitting });
+      return;
+    }
 
+    console.log('✅ Starting submission process...');
     setSubmitting("saving");
 
+    // Combine first and last name into passengerName field
+    const fullName = `${answers.passengerName!} ${answers.passengerSurname!}`.trim();
+    console.log('Full name:', fullName);
+    
     const payload = {
       origin: answers.from!,
       destination: answers.destination || answers.seededDestination || "",
@@ -594,19 +530,22 @@ export default function TripBuilderLite() {
       hotelPreference: answers.hotelPref!,
       flightClass: answers.flightClass!,
       visaStatus: answers.visaStatus!,
-      passengerName: answers.passengerName!,
-      passengerSurname: answers.passengerSurname!,
+      passengerName: fullName,
       email: answers.email!,
       phoneCountryCode: answers.phoneCountryCode!,
       phoneNumber: answers.phoneNumber!,
     };
 
+    console.log('📦 Payload prepared:', payload);
+
     try {
+      console.log('📡 Sending POST request to /api/trip-requests...');
       const res = await fetch("/api/trip-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      console.log('📡 Response received:', res.status, res.statusText);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const json = await res.json().catch(() => null);
@@ -615,74 +554,72 @@ export default function TripBuilderLite() {
           ? (json as { id?: string }).id ?? null
           : null;
 
-      // Associate any selected activities from cart with this trip
-      if (createdId && typeof window !== 'undefined') {
-        const selectedActivityIds = localStorage.getItem('selectedActivities');
-        console.log('Checking for stored activities...', selectedActivityIds);
+      // Associate selected activities from cart with this trip
+      if (createdId && cartActivities.length > 0) {
+        console.log('Associating cart activities with trip:', createdId);
+        console.log('Cart activities:', cartActivities);
         
-        if (selectedActivityIds) {
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const activity of cartActivities) {
+          console.log(`Associating activity ${activity.id} (${activity.name}) with trip ${createdId}`);
+          
           try {
-            const activityIds = JSON.parse(selectedActivityIds);
-            console.log('Found activity IDs to associate:', activityIds);
+            const response = await fetch(`/api/trip-requests/${createdId}/activities`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ activityId: activity.id })
+            });
             
-            let successCount = 0;
-            let errorCount = 0;
-            
-            for (const activityId of activityIds) {
-              console.log(`Associating activity ${activityId} with trip ${createdId}`);
-              
-              const response = await fetch(`/api/trip-requests/${createdId}/activities`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ activityId })
-              });
-              
-              if (response.ok) {
-                const result = await response.json();
-                console.log(`✓ Successfully associated activity ${activityId}:`, result);
-                successCount++;
-              } else {
-                const error = await response.text();
-                console.error(`✗ Failed to associate activity ${activityId}:`, response.status, error);
-                errorCount++;
-              }
-            }
-            
-            console.log(`Activity association summary: ${successCount} success, ${errorCount} errors`);
-            
-            // Only clear the stored activities if all were successful
-            if (errorCount === 0) {
-              localStorage.removeItem('selectedActivities');
-              console.log('Cleared stored activities after successful association');
+            if (response.ok) {
+              const result = await response.json();
+              console.log(`✓ Successfully associated activity ${activity.id}:`, result);
+              successCount++;
             } else {
-              console.warn('Some activities failed to associate. Keeping stored activities for retry.');
+              const errorText = await response.text();
+              console.error(`✗ Failed to associate activity ${activity.id}:`, response.status, errorText);
+              errorCount++;
             }
-            
           } catch (error) {
-            console.error('Error processing activity associations:', error);
+            console.error(`✗ Error associating activity ${activity.id}:`, error);
+            errorCount++;
           }
-        } else {
-          console.log('No stored activities found to associate');
         }
+        
+        console.log(`Activity association summary: ${successCount} success, ${errorCount} errors out of ${cartActivities.length} total`);
+        
+        // Clear cart if all activities were successfully associated
+        if (errorCount === 0 && successCount > 0) {
+          clearCart();
+          console.log('✓ Cart cleared after successful activity association');
+        } else if (errorCount > 0) {
+          console.warn('⚠ Some activities failed to associate. Cart not cleared.');
+        }
+      } else if (cartActivities.length === 0) {
+        console.log('No activities in cart to associate with trip');
       }
 
       setSubmitting("saved");
 
-      const params = new URLSearchParams();
-      const destId = destinationSlugFromLabel(payload.destination);
-      if (destId) params.set("destinationId", destId);
-
-      // Keep the loading state active during navigation
+      // Redirect to thank you page with trip ID
       if (createdId) {
-        router.push(
-          `/trip/receipt/${createdId}${params.size ? `?${params}` : ""}`
-        );
+        console.log('✓ Trip created successfully with ID:', createdId);
+        console.log('Redirecting to thank you page...');
+        
+        // Use a small delay to ensure all state updates complete
+        setTimeout(() => {
+          window.location.href = `/thank-you?tripId=${createdId}`;
+        }, 100);
       } else {
-        router.push(`/trip/receipt${params.size ? `?${params}` : ""}`);
+        console.error('✗ No trip ID returned from server');
+        alert('Error: No trip ID received. Please try again.');
       }
-      // Note: submitting state will remain "saved" until component unmounts or navigation completes
-    } catch {
+      
+    } catch (error) {
+      console.error('✗ Error submitting trip request:', error);
       setSubmitting("error");
+      alert('Error submitting trip request. Please try again.');
     }
   }
 
@@ -729,19 +666,9 @@ export default function TripBuilderLite() {
         <div className="glowbar mx-auto h-32 w-[135%]" />
       </div>
 
-      <div className="w-full max-w-none px-4 pt-8 pb-8 sm:px-4 sm:pt-16 sm:pb-16 md:pt-20 md:pb-20 md:max-w-2xl lg:max-w-4xl md:mx-auto">
-        <div className="mb-4 sm:mb-8">
-          <SectionHeader
-            id="tripbuilder-heading"
-            title="Trip Builder Lite"
-
-            align="center"
-            tone="light"
-          />
-        </div>
-
+      <div className="w-full max-w-none px-4 pt-4 pb-4 sm:px-4 sm:pt-6 sm:pb-6 md:pt-6 md:pb-6 md:max-w-2xl lg:max-w-4xl md:mx-auto">
         <div className="relative w-full rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-950/60 to-zinc-900/60 p-0.5 backdrop-blur">
-          <div className="relative rounded-xl sm:rounded-2xl bg-zinc-950/60 p-3 sm:p-4 md:p-6">
+          <div className="relative rounded-xl sm:rounded-2xl bg-zinc-950/60 p-3 sm:p-4 md:p-5">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl ring-1 ring-white/10 [box-shadow:0_0_0_1px_rgba(255,255,255,0.04),0_0_40px_2px_rgba(180,180,255,0.08)_inset]"
@@ -755,7 +682,7 @@ export default function TripBuilderLite() {
               maxVisited={maxVisited}
             />
 
-            <div className="mx-auto mt-3 w-full sm:max-w-md md:max-w-lg lg:max-w-2xl sm:mt-4 md:mt-6">
+            <div className="mx-auto mt-2 w-full sm:max-w-md md:max-w-lg lg:max-w-2xl sm:mt-3 md:mt-4">
               <div
                 ref={questionRef}
                 tabIndex={-1}
@@ -769,7 +696,7 @@ export default function TripBuilderLite() {
                   "pb-4 sm:pb-6 question-frame",
                 ].join(" ")}
               >
-                <div className="grid w-full gap-3 sm:gap-4 md:gap-6">
+                <div className="grid w-full gap-2 sm:gap-3 md:gap-4">
                   {current === "fromLocation" && (
                     <StepShell
                       title="Where are you traveling from?"
@@ -803,69 +730,6 @@ export default function TripBuilderLite() {
                           options={ORIGIN_CITIES}
                           value={answers.from}
                           onChange={(v) => setAnswer("from", v)}
-                        />
-                      </div>
-                    </StepShell>
-                  )}
-
-                  {current === "destinationSeed" &&
-                    answers.seededDestination && (
-                      <StepShell
-                        title={`Keep ${answers.seededDestination} as your destination?`}
-                      >
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-                          <button
-                            type="button"
-                            className="btn-primary min-h-[44px] touch-manipulation"
-                            onClick={keepSeeded}
-                          >
-                            Keep {answers.seededDestination}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-secondary min-h-[44px] touch-manipulation"
-                            onClick={changeDestination}
-                          >
-                            Change destination
-                          </button>
-                        </div>
-                      </StepShell>
-                    )}
-
-                  {current === "destinationSelect" && (
-                    <StepShell
-                      title="Pick a destination"
-                      subtitle="We’ll refine specifics after you submit"
-                    >
-                      {/* Mobile: dropdown select */}
-                      <div className="sm:hidden">
-                        <Labeled field="destination" label="Destination">
-                          <select
-                            id="destination"
-                            className="input"
-                            value={answers.destination ?? ""}
-                            onChange={(e) =>
-                              setAnswer("destination", e.target.value)
-                            }
-                          >
-                            <option value="" disabled>
-                              Select a destination
-                            </option>
-                            {DESTINATION_CHOICES.map((d) => (
-                              <option key={d} value={d}>
-                                {d}
-                              </option>
-                            ))}
-                          </select>
-                        </Labeled>
-                      </div>
-
-                      {/* Desktop: grid of choices */}
-                      <div className="hidden sm:block">
-                        <ChoiceGrid
-                          options={DESTINATION_CHOICES}
-                          value={answers.destination}
-                          onChange={(v) => setAnswer("destination", v)}
                         />
                       </div>
                     </StepShell>
@@ -1238,7 +1102,7 @@ export default function TripBuilderLite() {
             </div>
 
             {/* Sticky Nav */}
-            <div className="mt-3 sm:mt-6">
+            <div className="mt-2 sm:mt-4">
               <div className="sticky inset-x-0 bottom-0 z-10 flex w-full items-center justify-between rounded-none border border-white/10 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/40 bg-zinc-900/70 sm:mx-auto sm:bottom-2 sm:w-full sm:rounded-lg sm:px-2.5 sm:py-3">
                 <button
                   type="button"
@@ -1329,14 +1193,21 @@ export default function TripBuilderLite() {
           display: none; /* WebKit */
         }
 
-        /* responsive heights: only constrain on sm and up to avoid nested scroll on mobile */
+        /* responsive heights: constrain to fit within viewport */
         .question-frame {
-          /* mobile: auto height, no fixed min/max -> single page scroll */
+          /* mobile: auto height for natural scroll */
+          max-height: 60vh;
         }
         @media (min-width: 640px) {
           .question-frame {
-            min-height: min(45dvh, 350px);
-            max-height: min(55dvh, 450px);
+            min-height: 300px;
+            max-height: min(50vh, 500px);
+          }
+        }
+        @media (min-width: 1024px) {
+          .question-frame {
+            min-height: 350px;
+            max-height: min(55vh, 550px);
           }
         }
 
@@ -1477,17 +1348,15 @@ export default function TripBuilderLite() {
       `}</style>
 
       {/* Loading Popup */}
-      {(submitting === "saving" || submitting === "saved") && (
+      {submitting === "saving" && (
         <div className="loading-popup">
           <div className="loading-card">
             <div className="spinner"></div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              {submitting === "saving" ? "Creating Your Trip" : "Redirecting to Your Trip"}
+              Creating Your Trip
             </h3>
             <p className="text-sm text-white/70 mb-1">
-              {submitting === "saving" 
-                ? "Processing your preferences..." 
-                : "Taking you to your trip details..."}
+              Processing your preferences...
             </p>
             <div className="pulse-dots">
               <div className="pulse-dot"></div>
