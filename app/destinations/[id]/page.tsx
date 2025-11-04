@@ -13,41 +13,86 @@ const DESTINATION_INFO: Record<string, {
   subtitle: string; 
   image: string; 
   description: string;
-  whyVisit?: string[];
-  highlights?: string[];
-  bestFor?: string[];
-  whenToVisit?: string;
+  topHighlights?: string[];
+  quickFacts?: {
+    bestTime?: string;
+    currency?: string;
+    language?: string;
+  };
+  categories?: {
+    architecture?: string[];
+    shopping?: string[];
+    entertainment?: string[];
+    culture?: string[];
+  };
+  perfectFor?: {
+    icon: string;
+    title: string;
+    description: string;
+  }[];
 }> = {
   "dubai": {
     title: "Dubai",
     subtitle: "Luxury & Architecture",
     image: "/images/dubai.jpg",
     description: "Experience the epitome of luxury and modern architecture in this desert metropolis. From the world's tallest building to pristine beaches, Dubai offers endless adventures.",
-    whyVisit: [
-      "Home to the world's tallest building, Burj Khalifa, offering breathtaking panoramic views from 828 meters high",
-      "Unparalleled shopping experience with massive malls like Dubai Mall and Mall of the Emirates featuring indoor skiing",
-      "Pristine beaches and crystal-clear waters of the Arabian Gulf perfect for water sports and relaxation",
-      "World-class dining scene with celebrity chef restaurants and authentic Middle Eastern cuisine",
-      "Ultra-modern infrastructure combined with rich Arabian heritage and culture",
-      "Year-round sunshine and luxurious resorts offering exceptional hospitality"
+    topHighlights: [
+      "World's tallest building - Burj Khalifa",
+      "Luxury shopping at Dubai Mall",
+      "Palm Jumeirah artificial island",
+      "Traditional gold and spice souks",
+      "Desert safaris and dune bashing",
+      "World-class dining experiences"
     ],
-    highlights: [
-      "Burj Khalifa & Dubai Fountain",
-      "Palm Jumeirah & Atlantis",
-      "Desert Safari Adventures",
-      "Gold & Spice Souks",
-      "Dubai Marina & JBR Walk",
-      "Museum of the Future"
-    ],
-    bestFor: [
-      "Luxury travelers seeking world-class experiences",
-      "Adventure enthusiasts looking for desert thrills",
-      "Shopping lovers and fashion enthusiasts",
-      "Families wanting theme parks and beaches",
-      "Architecture and design admirers",
-      "Food connoisseurs exploring global cuisines"
-    ],
-    whenToVisit: "November to March offers perfect weather with temperatures between 20-30°C, ideal for outdoor activities and beach time."
+    quickFacts: {
+      bestTime: "November to March",
+      currency: "AED (Dirham)",
+      language: "Arabic (English widely spoken)"
+    },
+    categories: {
+      architecture: [
+        "Burj Khalifa",
+        "Burj Al Arab",
+        "Museum of the Future"
+      ],
+      shopping: [
+        "Dubai Mall",
+        "Mall of the Emirates",
+        "Gold Souk"
+      ],
+      entertainment: [
+        "Dubai Fountain",
+        "IMG Worlds",
+        "Ski Dubai"
+      ],
+      culture: [
+        "Dubai Museum",
+        "Al Fahidi District",
+        "Jumeirah Mosque"
+      ]
+    },
+    perfectFor: [
+      {
+        icon: "luxury",
+        title: "Luxury Travelers",
+        description: "World-class hotels, fine dining, and exclusive shopping experiences"
+      },
+      {
+        icon: "family",
+        title: "Families",
+        description: "Theme parks, beaches, and family-friendly attractions throughout"
+      },
+      {
+        icon: "adventure",
+        title: "Adventure Seekers",
+        description: "Desert safaris, skydiving, and water sports activities"
+      },
+      {
+        icon: "shopping",
+        title: "Shopping Enthusiasts",
+        description: "From traditional souks to ultra-modern malls with global brands"
+      }
+    ]
   },
   "thailand": {
     title: "Thailand",
@@ -219,98 +264,187 @@ export default async function DestinationPage({
         
         <div className="relative mx-auto max-w-6xl px-6 py-12 space-y-16">
           
-          {/* Why Visit Section */}
-          {destination.whyVisit && destination.whyVisit.length > 0 && (
-            <section className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/2 p-8">
-              <h2 className="mb-6 text-3xl font-bold text-white">Why Visit {destination.title}?</h2>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {destination.whyVisit.map((reason, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
-                      <svg className="h-4 w-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
+          {/* Highlights & Essential Info Section */}
+          {(destination.topHighlights || destination.quickFacts) && (
+            <section>
+              <h2 className="mb-8 text-3xl font-bold text-white">Highlights & Essential Info</h2>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {/* Top Highlights */}
+                {destination.topHighlights && (
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-8">
+                    <h3 className="mb-6 text-2xl font-semibold text-white">Top Highlights</h3>
+                    <ul className="space-y-3">
+                      {destination.topHighlights.map((highlight, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <svg className="mt-1 h-5 w-5 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-zinc-300">{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Quick Facts */}
+                {destination.quickFacts && (
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-900/10 to-transparent p-8">
+                    <h3 className="mb-6 text-2xl font-semibold text-white">Quick Facts</h3>
+                    <div className="space-y-4">
+                      {destination.quickFacts.bestTime && (
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+                            <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="text-sm text-zinc-400">Best Time to Visit</div>
+                            <div className="font-semibold text-white">{destination.quickFacts.bestTime}</div>
+                          </div>
+                        </div>
+                      )}
+                      {destination.quickFacts.currency && (
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                            <svg className="h-5 w-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="text-sm text-zinc-400">Currency</div>
+                            <div className="font-semibold text-white">{destination.quickFacts.currency}</div>
+                          </div>
+                        </div>
+                      )}
+                      {destination.quickFacts.language && (
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/20">
+                            <svg className="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="text-sm text-zinc-400">Language</div>
+                            <div className="font-semibold text-white">{destination.quickFacts.language}</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-zinc-300 leading-relaxed">{reason}</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Destination Highlights by Category */}
+          {destination.categories && (
+            <section>
+              <h2 className="mb-8 text-3xl font-bold text-white">Destination Highlights by Category</h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {destination.categories.architecture && (
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6">
+                    <h3 className="mb-4 text-xl font-semibold text-blue-400">Architecture</h3>
+                    <ul className="space-y-2">
+                      {destination.categories.architecture.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-zinc-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {destination.categories.shopping && (
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6">
+                    <h3 className="mb-4 text-xl font-semibold text-emerald-400">Shopping</h3>
+                    <ul className="space-y-2">
+                      {destination.categories.shopping.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-zinc-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {destination.categories.entertainment && (
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6">
+                    <h3 className="mb-4 text-xl font-semibold text-purple-400">Entertainment</h3>
+                    <ul className="space-y-2">
+                      {destination.categories.entertainment.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-zinc-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-purple-400"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {destination.categories.culture && (
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6">
+                    <h3 className="mb-4 text-xl font-semibold text-amber-400">Culture</h3>
+                    <ul className="space-y-2">
+                      {destination.categories.culture.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-zinc-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Perfect For Section */}
+          {destination.perfectFor && (
+            <section>
+              <h2 className="mb-4 text-3xl font-bold text-white">Perfect For</h2>
+              <p className="mb-8 text-zinc-400">This destination is ideally suited for the following types of travelers:</p>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {destination.perfectFor.map((item, idx) => (
+                  <div key={idx} className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20">
+                        {item.icon === "luxury" && (
+                          <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                          </svg>
+                        )}
+                        {item.icon === "family" && (
+                          <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        )}
+                        {item.icon === "adventure" && (
+                          <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        )}
+                        {item.icon === "shopping" && (
+                          <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                    </div>
+                    <p className="text-zinc-400">{item.description}</p>
                   </div>
                 ))}
               </div>
             </section>
           )}
 
-          {/* Highlights & Best For Grid */}
-          {(destination.highlights || destination.bestFor) && (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Highlights */}
-              {destination.highlights && destination.highlights.length > 0 && (
-                <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-900/20 to-purple-900/20 p-8">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20">
-                      <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">Top Highlights</h3>
-                  </div>
-                  <ul className="space-y-3">
-                    {destination.highlights.map((highlight, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-zinc-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Best For */}
-              {destination.bestFor && destination.bestFor.length > 0 && (
-                <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-amber-900/20 to-orange-900/20 p-8">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20">
-                      <svg className="h-5 w-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">Perfect For</h3>
-                  </div>
-                  <ul className="space-y-3">
-                    {destination.bestFor.map((category, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-zinc-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                        <span>{category}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* When to Visit */}
-          {destination.whenToVisit && (
-            <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-r from-emerald-900/20 to-teal-900/20 p-8">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
-                  <svg className="h-6 w-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="mb-2 text-2xl font-bold text-white">Best Time to Visit</h3>
-                  <p className="text-lg text-zinc-300 leading-relaxed">{destination.whenToVisit}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Activities Section */}
           <section>
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white">Experiences in {destination.title}</h2>
+              <h2 className="text-3xl font-bold text-white">Popular Activities & Experiences</h2>
               <p className="mt-2 text-zinc-400">
                 {activities.length > 0 
-                  ? `Choose from ${activities.length} curated activities`
+                  ? `Discover ${activities.length} amazing experiences in ${destination.title}`
                   : "Activities coming soon"}
               </p>
             </div>
