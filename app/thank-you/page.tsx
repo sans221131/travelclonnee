@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [countdown, setCountdown] = useState(10);
@@ -14,7 +14,7 @@ export default function ThankYouPage() {
   useEffect(() => {
     // Get trip ID from URL
     const tripId = searchParams.get("tripId");
-    
+
     if (!tripId) {
       router.push("/");
       return;
@@ -31,7 +31,9 @@ export default function ThankYouPage() {
         }
 
         // Fetch associated activities
-        const activitiesResponse = await fetch(`/api/trip-requests/${tripId}/activities`);
+        const activitiesResponse = await fetch(
+          `/api/trip-requests/${tripId}/activities`
+        );
         if (activitiesResponse.ok) {
           const data = await activitiesResponse.json();
           setActivities(data.activities || []);
@@ -58,10 +60,10 @@ export default function ThankYouPage() {
 
   const cityToIATA = (city: string | undefined): string => {
     if (!city) return "---";
-    
+
     // Extract city name from format like "Mumbai, India" or "Dubai, UAE"
-    const cityName = city.split(',')[0].trim();
-    
+    const cityName = city.split(",")[0].trim();
+
     const codes: Record<string, string> = {
       mumbai: "BOM",
       delhi: "DEL",
@@ -89,7 +91,9 @@ export default function ThankYouPage() {
       rajasthan: "JAI",
       uttarakhand: "DED",
     };
-    return codes[cityName.toLowerCase()] || cityName.substring(0, 3).toUpperCase();
+    return (
+      codes[cityName.toLowerCase()] || cityName.substring(0, 3).toUpperCase()
+    );
   };
 
   if (!tripData) {
@@ -152,7 +156,9 @@ export default function ThankYouPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-white">Trip Details</h2>
-              <p className="text-sm text-zinc-400">Booking Reference: {tripData.id.substring(0, 8).toUpperCase()}</p>
+              <p className="text-sm text-zinc-400">
+                Booking Reference: {tripData.id.substring(0, 8).toUpperCase()}
+              </p>
             </div>
           </div>
 
@@ -185,7 +191,9 @@ export default function ThankYouPage() {
                 <div className="mb-1 text-3xl font-bold text-white">
                   {cityToIATA(tripData.destination)}
                 </div>
-                <div className="text-sm text-zinc-400">{tripData.destination}</div>
+                <div className="text-sm text-zinc-400">
+                  {tripData.destination}
+                </div>
               </div>
             </div>
           </div>
@@ -194,40 +202,57 @@ export default function ThankYouPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="mb-1 text-xs text-zinc-400">Departure Date</div>
-              <div className="text-lg font-semibold text-white">{tripData.startDate}</div>
+              <div className="text-lg font-semibold text-white">
+                {tripData.startDate}
+              </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="mb-1 text-xs text-zinc-400">Return Date</div>
-              <div className="text-lg font-semibold text-white">{tripData.endDate}</div>
+              <div className="text-lg font-semibold text-white">
+                {tripData.endDate}
+              </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="mb-1 text-xs text-zinc-400">Passenger Name</div>
-              <div className="text-lg font-semibold text-white">{tripData.passengerName}</div>
+              <div className="text-lg font-semibold text-white">
+                {tripData.passengerName}
+              </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="mb-1 text-xs text-zinc-400">Adults</div>
-              <div className="text-lg font-semibold text-white">{tripData.adults}</div>
+              <div className="text-lg font-semibold text-white">
+                {tripData.adults}
+              </div>
             </div>
             {tripData.kids > 0 && (
               <div className="rounded-lg border border-white/10 bg-white/5 p-4">
                 <div className="mb-1 text-xs text-zinc-400">Children</div>
-                <div className="text-lg font-semibold text-white">{tripData.kids}</div>
+                <div className="text-lg font-semibold text-white">
+                  {tripData.kids}
+                </div>
               </div>
             )}
             <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="mb-1 text-xs text-zinc-400">Email</div>
-              <div className="text-sm font-medium text-white">{tripData.email}</div>
+              <div className="text-sm font-medium text-white">
+                {tripData.email}
+              </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="mb-1 text-xs text-zinc-400">Phone</div>
-              <div className="text-sm font-medium text-white">{tripData.phoneCountryCode} {tripData.phoneNumber}</div>
+              <div className="text-sm font-medium text-white">
+                {tripData.phoneCountryCode} {tripData.phoneNumber}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Selected Activities */}
         {activities.length > 0 && (
-          <div className="mb-6 animate-slideUp rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 p-8 backdrop-blur-xl" style={{ animationDelay: "0.1s" }}>
+          <div
+            className="mb-6 animate-slideUp rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 p-8 backdrop-blur-xl"
+            style={{ animationDelay: "0.1s" }}
+          >
             <div className="mb-6 flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/20">
                 <svg
@@ -245,8 +270,13 @@ export default function ThankYouPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-white">Selected Activities</h2>
-                <p className="text-sm text-zinc-400">{activities.length} experience{activities.length !== 1 ? 's' : ''} selected</p>
+                <h2 className="text-xl font-semibold text-white">
+                  Selected Activities
+                </h2>
+                <p className="text-sm text-zinc-400">
+                  {activities.length} experience
+                  {activities.length !== 1 ? "s" : ""} selected
+                </p>
               </div>
             </div>
 
@@ -267,7 +297,11 @@ export default function ThankYouPage() {
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-zinc-800 text-zinc-500">
-                        <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 20 20">
+                        <svg
+                          className="h-8 w-8"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
                           <path
                             fillRule="evenodd"
                             d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
@@ -278,13 +312,16 @@ export default function ThankYouPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-white">{activity.name}</h3>
+                    <h3 className="font-semibold text-white">
+                      {activity.name}
+                    </h3>
                     <p className="text-sm text-zinc-400 capitalize">
-                      {activity.destinationId?.replace(/-/g, ' ')}
+                      {activity.destinationId?.replace(/-/g, " ")}
                     </p>
                     {activity.price && (
                       <p className="mt-1 text-sm font-medium text-emerald-400">
-                        {activity.currency} {Intl.NumberFormat("en-IN").format(activity.price)}
+                        {activity.currency}{" "}
+                        {Intl.NumberFormat("en-IN").format(activity.price)}
                       </p>
                     )}
                   </div>
@@ -295,7 +332,10 @@ export default function ThankYouPage() {
         )}
 
         {/* Countdown and Redirect */}
-        <div className="text-center animate-fadeIn" style={{ animationDelay: "0.2s" }}>
+        <div
+          className="text-center animate-fadeIn"
+          style={{ animationDelay: "0.2s" }}
+        >
           <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-3 backdrop-blur">
             <svg
               className="h-5 w-5 animate-spin text-blue-400"
@@ -360,5 +400,22 @@ export default function ThankYouPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-white/10 border-t-blue-500"></div>
+            <p className="text-zinc-400">Preparing your trip details...</p>
+          </div>
+        </div>
+      }
+    >
+      <ThankYouContent />
+    </Suspense>
   );
 }
