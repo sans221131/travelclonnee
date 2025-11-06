@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export interface CartActivity {
   id: string;
@@ -25,30 +26,51 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper to check if path is destination or activity page
+function isAllowedPath(path: string): boolean {
+  return path.startsWith('/destinations/') || 
+         path.startsWith('/activities/') || 
+         path.startsWith('/checkout');
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<CartActivity[]>([]);
   const [showNotification, setShowNotification] = useState(false);
+  const pathname = usePathname();
 
-  // Load cart from localStorage on mount
+  // Load cart from sessionStorage on mount
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('trip-cart');
+      const savedCart = sessionStorage.getItem('trip-cart');
       if (savedCart) {
         setActivities(JSON.parse(savedCart));
       }
     } catch (error) {
-      console.error('Failed to load cart from localStorage:', error);
+      console.error('Failed to load cart from sessionStorage:', error);
     }
   }, []);
 
-  // Save cart to localStorage whenever activities change
+  // Save cart to sessionStorage whenever activities change
   useEffect(() => {
     try {
-      localStorage.setItem('trip-cart', JSON.stringify(activities));
+      sessionStorage.setItem('trip-cart', JSON.stringify(activities));
     } catch (error) {
-      console.error('Failed to save cart to localStorage:', error);
+      console.error('Failed to save cart to sessionStorage:', error);
     }
   }, [activities]);
+
+  // Clear cart when navigating away from destination/activity pages
+  useEffect(() => {
+    if (pathname && !isAllowedPath(pathname)) {
+      // Clear cart if we're not on a destination or activity page
+      setActivities([]);
+      try {
+        sessionStorage.removeItem('trip-cart');
+      } catch (error) {
+        console.error('Failed to clear cart from sessionStorage:', error);
+      }
+    }
+  }, [pathname]);
 
   const addActivity = (activity: CartActivity) => {
     setActivities(prev => {

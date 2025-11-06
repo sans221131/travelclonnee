@@ -30,13 +30,13 @@ export default function CartDrawer() {
     setCountdown(5);
     
     // Note: Removed automatic trip creation that was causing duplicate entries
-    // Activities are now stored in localStorage and will be associated with the trip
+    // Activities are now stored in sessionStorage and will be associated with the trip
     // when the user completes the proper trip builder form with real customer details
     console.log('Activities confirmed:', activities.length, 'activities selected');
     
-    // Store selected activities in localStorage for later association with the actual trip
+    // Store selected activities in sessionStorage for later association with the actual trip
     if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedActivities', JSON.stringify(activities.map(a => a.id)));
+      sessionStorage.setItem('selectedActivities', JSON.stringify(activities.map(a => a.id)));
     }
   };
 
