@@ -221,7 +221,7 @@ export default async function ActivityDetailPage(props: {
 
           {/* back */}
           <Link
-            href={tripId ? `/trip/receipt/${tripId}` : "/"}
+            href={tripId ? `/trip/receipt/${tripId}` : `/destinations/${activity.destinationId}`}
             className="absolute left-6 top-6 z-20 rounded-full bg-black/55 p-3 text-white backdrop-blur-sm ring-1 ring-white/10 transition-all hover:bg-black/70"
             aria-label="Go back"
           >
@@ -293,29 +293,20 @@ export default async function ActivityDetailPage(props: {
 
                   {/* right: CTA */}
                   <div className="shrink-0">
-                    {tripId ? (
-                      <AddToTripButton
-                        tripRequestId={tripId}
-                        activityId={activity.id}
-                        activityName={activity.name}
-                        activityImageUrl={activity.imageUrl}
-                        destinationId={activity.destinationId}
-                        price={
-                          typeof activity.price === "string"
-                            ? parseFloat(activity.price)
-                            : activity.price ?? undefined
-                        }
-                        currency={activity.currency}
-                        className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
-                      />
-                    ) : (
-                      <Link
-                        href="/"
-                        className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800"
-                      >
-                        Add to My Trip Plan
-                      </Link>
-                    )}
+                    <AddToTripButton
+                      tripRequestId={tripId || ""}
+                      activityId={activity.id}
+                      activityName={activity.name}
+                      activityImageUrl={activity.imageUrl}
+                      destinationId={activity.destinationId}
+                      price={
+                        typeof activity.price === "string"
+                          ? parseFloat(activity.price)
+                          : activity.price ?? undefined
+                      }
+                      currency={activity.currency}
+                      className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
+                    />
                   </div>
                 </div>
               </div>
@@ -446,29 +437,20 @@ export default async function ActivityDetailPage(props: {
                 </div>
 
                 <div className="mt-5">
-                  {tripId ? (
-                    <AddToTripButton
-                      tripRequestId={tripId}
-                      activityId={activity.id}
-                      activityName={activity.name}
-                      activityImageUrl={activity.imageUrl}
-                      destinationId={activity.destinationId}
-                      price={
-                        typeof activity.price === "string"
-                          ? parseFloat(activity.price)
-                          : activity.price ?? undefined
-                      }
-                      currency={activity.currency}
-                      className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
-                    />
-                  ) : (
-                    <Link
-                      href="/"
-                      className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800"
-                    >
-                      Add to My Trip Plan
-                    </Link>
-                  )}
+                  <AddToTripButton
+                    tripRequestId={tripId || ""}
+                    activityId={activity.id}
+                    activityName={activity.name}
+                    activityImageUrl={activity.imageUrl}
+                    destinationId={activity.destinationId}
+                    price={
+                      typeof activity.price === "string"
+                        ? parseFloat(activity.price)
+                        : activity.price ?? undefined
+                    }
+                    currency={activity.currency}
+                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
+                  />
                 </div>
 
                 <p className="mt-4 text-[11px] leading-relaxed text-zinc-400">
@@ -521,29 +503,20 @@ export default async function ActivityDetailPage(props: {
             </div>
           </div>
           <div className="min-w-[44%]">
-            {tripId ? (
-              <AddToTripButton
-                tripRequestId={tripId}
-                activityId={activity.id}
-                activityName={activity.name}
-                activityImageUrl={activity.imageUrl}
-                destinationId={activity.destinationId}
-                price={
-                  typeof activity.price === "string"
-                    ? parseFloat(activity.price)
-                    : activity.price ?? undefined
-                }
-                currency={activity.currency}
-                className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
-              />
-            ) : (
-              <Link
-                href="/"
-                className="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800"
-              >
-                Add
-              </Link>
-            )}
+            <AddToTripButton
+              tripRequestId={tripId || ""}
+              activityId={activity.id}
+              activityName={activity.name}
+              activityImageUrl={activity.imageUrl}
+              destinationId={activity.destinationId}
+              price={
+                typeof activity.price === "string"
+                  ? parseFloat(activity.price)
+                  : activity.price ?? undefined
+              }
+              currency={activity.currency}
+              className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400/20 transition-all hover:from-blue-700 hover:to-blue-800 disabled:opacity-60"
+            />
           </div>
         </div>
       </div>
