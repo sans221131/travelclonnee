@@ -60,6 +60,18 @@ export default function HomePage() {
           title="Choose Your Destination"
           items={[
             {
+              id: "bali",
+              image: "/images/bali.jpg",
+              title: "Bali",
+              subtitle: "Tropical Paradise",
+            },
+            {
+              id: "united-states",
+              image: "/images/united-states.jpg",
+              title: "United States",
+              subtitle: "Diversity & Adventure",
+            },
+            {
               id: "dubai",
               image: "/images/dubai.jpg",
               title: "Dubai",
@@ -78,16 +90,58 @@ export default function HomePage() {
               subtitle: "History & Charm",
             },
             {
-              id: "united-states",
-              image: "/images/united-states.jpg",
-              title: "United States",
-              subtitle: "Diversity & Adventure",
+              id: "france",
+              image: "/images/paris.jpg",
+              title: "France",
+              subtitle: "Art & Cuisine",
             },
             {
-              id: "bali",
+              id: "japan",
+              image: "/images/paris.jpg",
+              title: "Japan",
+              subtitle: "Tradition & Modernity",
+            },
+            {
+              id: "turkey",
+              image: "/images/dubai.jpg",
+              title: "Türkiye",
+              subtitle: "East Meets West",
+            },
+            {
+              id: "china",
+              image: "/images/thailand.jpg",
+              title: "China",
+              subtitle: "Ancient & Modern",
+            },
+            {
+              id: "greece",
+              image: "/images/london.jpg",
+              title: "Greece",
+              subtitle: "Ancient Wonders",
+            },
+            {
+              id: "germany",
+              image: "/images/switzerland.jpg",
+              title: "Germany",
+              subtitle: "Culture & Heritage",
+            },
+            {
+              id: "netherlands",
               image: "/images/bali.jpg",
-              title: "Bali",
-              subtitle: "Tropical Paradise",
+              title: "Netherlands",
+              subtitle: "Canals & Culture",
+            },
+            {
+              id: "saudi-arabia",
+              image: "/images/dubai.jpg",
+              title: "Saudi Arabia",
+              subtitle: "Desert & Heritage",
+            },
+            {
+              id: "vietnam",
+              image: "/images/thailand.jpg",
+              title: "Vietnam",
+              subtitle: "Rich Heritage",
             },
             {
               id: "switzerland",
@@ -96,73 +150,55 @@ export default function HomePage() {
               subtitle: "Alps & Serenity",
             },
             {
-              id: "paris",
-              image: "/images/paris.jpg",
-              title: "Paris",
-              subtitle: "Romance & Art",
-            },
-            {
-              id: "bhutan",
-              image: "/images/bhutan.png",
-              title: "Bhutan",
-              subtitle: "Himalayan Kingdom",
-            },
-            {
-              id: "maldives",
-              image: "/images/maldives.jpg",
-              title: "Maldives",
-              subtitle: "Crystal Waters",
-            },
-            {
-              id: "kerala",
+              id: "india",
               image: "/images/kerala.jpg",
-              title: "Kerala",
-              subtitle: "God's Own Country",
+              title: "India",
+              subtitle: "Incredible Diversity",
             },
             {
-              id: "assam",
-              image: "/images/assam.jpg",
-              title: "Assam",
-              subtitle: "Tea Gardens & Wildlife",
+              id: "singapore",
+              image: "/images/bali.jpg",
+              title: "Singapore",
+              subtitle: "Modern Marvel",
             },
             {
-              id: "himachal",
-              image: "/images/himachal.jpg",
-              title: "Himachal",
-              subtitle: "Mountain Retreat",
+              id: "south-africa",
+              image: "/images/switzerland.jpg",
+              title: "South Africa",
+              subtitle: "Safari & Coastline",
             },
             {
-              id: "meghalaya",
-              image: "/images/meghalaya.jpg",
-              title: "Meghalaya",
-              subtitle: "Abode of Clouds",
+              id: "australia",
+              image: "/images/bali.jpg",
+              title: "Australia",
+              subtitle: "Reef & Outback",
             },
             {
-              id: "mysore",
-              image: "/images/mysore.jpg",
-              title: "Mysore",
-              subtitle: "Royal Heritage",
-            },
-            {
-              id: "rajasthan",
-              image: "/images/rajasthan.jpg",
-              title: "Rajasthan",
-              subtitle: "Desert Majesty",
-            },
-            {
-              id: "uttarakhand",
-              image: "/images/uttarakhand.jpg",
-              title: "Uttarakhand",
-              subtitle: "Spiritual Heights",
-            },
-            {
-              id: "ladakh",
-              image: "/images/ladakh.jpg",
-              title: "Ladakh",
-              subtitle: "Cold Desert Beauty",
+              id: "new-zealand",
+              image: "/images/switzerland.jpg",
+              title: "New Zealand",
+              subtitle: "Natural Beauty",
             },
           ]}
         />
+
+        {/* View All Destinations Button */}
+        <section className="relative bg-zinc-950 py-8 sm:py-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <a
+              href="/all-destinations"
+              className="inline-flex items-center gap-2 rounded-xl bg-white text-black px-8 py-4 text-base font-medium shadow-lg ring-1 ring-white/20 transition-all hover:bg-white/90 hover:scale-105 active:scale-95"
+            >
+              <span>View All Destinations</span>
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
+            <p className="mt-4 text-sm text-zinc-400">
+              Explore 60+ destinations worldwide
+            </p>
+          </div>
+        </section>
 
         {/* Section 3: How It Works — GSAP Motion Path */}
         <RunwayBands />

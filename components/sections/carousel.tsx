@@ -71,6 +71,9 @@ export default function Carousel({
   const [isRouletting, setIsRouletting] = useState(false);
   const [rouletteTarget, setRouletteTarget] = useState<number | null>(null);
   const timeoutsRef = useRef<number[]>([]);
+  const [isIdle, setIsIdle] = useState(true);
+  const pendingSelectionRef = useRef<string | null>(null);
+  const idleTimerRef = useRef<number | null>(null);
 
   // Pills (bottom bar)
   const pillsRef = useRef<HTMLDivElement | null>(null);
@@ -150,10 +153,16 @@ export default function Carousel({
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root) return;
-
     let ticking = false;
 
     const onScroll = () => {
+      // mark movement; we consider the carousel "not idle" while scrolling
+      setIsIdle(false);
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+
       if (ticking) return;
       ticking = true;
 
@@ -193,6 +202,14 @@ export default function Carousel({
         }
 
         if (bestIdx !== active && !isRouletting) setActive(bestIdx);
+
+        // schedule idle detection after scroll stops
+        const idleId = window.setTimeout(() => {
+          setIsIdle(true);
+          idleTimerRef.current = null;
+        }, 160);
+        idleTimerRef.current = idleId;
+        timeoutsRef.current.push(idleId);
       });
     };
 
@@ -226,6 +243,7 @@ export default function Carousel({
       return;
     }
 
+    setIsIdle(false);
     setSnapEnabled(false);
 
     const start = root.scrollLeft;
@@ -239,7 +257,11 @@ export default function Carousel({
       if (!node) return;
       node.scrollLeft = start + change * easeInOutCubic(t);
       if (t < 1) requestAnimationFrame(step);
-      else setTimeout(() => setSnapEnabled(true), 0);
+      else
+        setTimeout(() => {
+          setSnapEnabled(true);
+          setIsIdle(true);
+        }, 0);
     };
     requestAnimationFrame(step);
   };
@@ -270,8 +292,8 @@ export default function Carousel({
     setIsRouletting(false);
     setRouletteTarget(null);
     setDramatic(false);
-
     setActive(clamped);
+    setIsIdle(false);
     animateScrollTo(left, prefersReduced ? 0 : ms);
     centerPill(clamped);
   };
@@ -313,14 +335,9 @@ export default function Carousel({
     centerPill(clamped);
   };
 
-  // Handle destination selection - navigate to destination page
-  const handleDestinationSelect = (itemId: string, delayScrolling = false) => {
-    // Navigate to destination page after animation completes if needed
-    const navigateDelay = delayScrolling ? TRAVEL_MAX + 100 : 0;
-    
-    setTimeout(() => {
-      window.location.href = `/destinations/${itemId}`;
-    }, navigateDelay);
+  // Handle destination selection - navigate to destination page immediately
+  const handleDestinationSelect = (itemId: string) => {
+    window.location.href = `/destinations/${itemId}`;
   };
 
   const handleImageLoad = (imageId: string) => {
@@ -331,6 +348,20 @@ export default function Carousel({
     timeoutsRef.current.forEach((id) => clearTimeout(id));
     timeoutsRef.current = [];
   };
+
+  // When a user selected a card while the carousel was moving, we store a pending
+  // selection and only navigate when the carousel becomes idle and the selected
+  // card is the centered/active one.
+  useEffect(() => {
+    if (!isIdle) return;
+    const pending = pendingSelectionRef.current;
+    if (!pending) return;
+    const current = items[active];
+    if (current && current.id === pending) {
+      pendingSelectionRef.current = null;
+      handleDestinationSelect(pending);
+    }
+  }, [isIdle, active, items]);
 
   // Kept for completeness; pills/keys use travelToIndex now
   const rouletteToDestination = (targetIndex: number) => {
@@ -501,11 +532,16 @@ export default function Carousel({
                   : "ring-1 ring-white/20 opacity-75 scale-95 sm:scale-98"
               }`}
               onClick={() => {
-                const needsAnimation = i !== active; // Check if we need to animate to this card first
-                if (needsAnimation) {
-                  travelToIndex(i); // Animate to the card first
+                if (i === active) {
+                  if (isIdle) {
+                    handleDestinationSelect(p.id);
+                  } else {
+                    pendingSelectionRef.current = p.id;
+                  }
+                } else {
+                  pendingSelectionRef.current = p.id;
+                  travelToIndex(i);
                 }
-                handleDestinationSelect(p.id, needsAnimation); // Then handle selection with appropriate delay
               }}
               style={
                 isRouletting && i === active
@@ -614,9 +650,13 @@ export default function Carousel({
                     pillBtnRefs.current[i] = el;
                   }}
                   onClick={() => {
-                    const needsAnimation = i !== active; // Check if animation is needed
-                    travelToIndex(i); // smooth travel
-                    handleDestinationSelect(p.id, needsAnimation); // delay scrolling if animation is needed
+                    if (i === active) {
+                      if (isIdle) handleDestinationSelect(p.id);
+                      else pendingSelectionRef.current = p.id;
+                    } else {
+                      pendingSelectionRef.current = p.id;
+                      travelToIndex(i);
+                    }
                   }}
                   role="tab"
                   aria-selected={i === active}

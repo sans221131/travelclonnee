@@ -4,7 +4,7 @@
   "private": true,
   "description": "ATLASDORE TRAVEL PRIVATE LIMITED - Official Website",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "drizzle:generate": "drizzle-kit generate",
