@@ -36,7 +36,7 @@ const DESTINATION_INFO: Record<string, {
   "bali": {
     title: "Bali",
     subtitle: "Tropical Paradise",
-    image: "/images/bali.jpg",
+    image: "/countries/bali.jpg",
     description: "Bali is an Indonesian island paradise known for its forested volcanic mountains, iconic rice paddies, beaches, and coral reefs—famous for wellness retreats and vibrant culture.",
     topHighlights: [
       "Rice terraces of Tegallalang",
@@ -67,7 +67,7 @@ const DESTINATION_INFO: Record<string, {
   "united-states": {
     title: "United States",
     subtitle: "Diversity & Adventure",
-    image: "/images/united-states.jpg",
+    image: "/countries/united-states.jpg",
     description: "The United States offers coast-to-coast variety: major cities, national parks, beaches, and cultural hubs—ideal for road trips and immersive city stays.",
     topHighlights: [
       "Grand Canyon and Yellowstone National Parks",
@@ -98,7 +98,7 @@ const DESTINATION_INFO: Record<string, {
   "dubai": {
     title: "Dubai",
     subtitle: "Luxury & Architecture",
-    image: "/images/dubai.jpg",
+    image: "/countries/dubai.jpg",
     description: "Dubai is a modern metropolis with iconic skyscrapers, luxury shopping, desert adventures and vibrant cultural offerings.",
     topHighlights: [
       "World's tallest building - Burj Khalifa",
@@ -161,7 +161,7 @@ const DESTINATION_INFO: Record<string, {
   "thailand": {
     title: "Thailand",
     subtitle: "Beaches & Culture",
-    image: "/images/thailand.jpg",
+    image: "/countries/thailand.jpg",
     description: "Discover the perfect blend of tropical paradise and rich cultural heritage. Thailand captivates with its golden temples, stunning beaches, and warm hospitality.",
     topHighlights: [
       "Grand Palace and Temple of the Emerald Buddha",
@@ -224,7 +224,7 @@ const DESTINATION_INFO: Record<string, {
   "london": {
     title: "London",
     subtitle: "History & Charm",
-    image: "/images/london.jpg",
+    image: "/countries/london.jpg",
     description: "Walk through centuries of history in one of the world's most iconic cities. From royal palaces to modern art, London seamlessly blends tradition with innovation.",
     topHighlights: [
       "Buckingham Palace and Changing of the Guard",
@@ -287,7 +287,7 @@ const DESTINATION_INFO: Record<string, {
   "bhutan": {
     title: "Bhutan",
     subtitle: "Himalayan Kingdom",
-    image: "/images/bhutan.png",
+    image: "/countries/bhutan.png",
     description: "Journey to the last Himalayan kingdom where happiness is measured differently. Bhutan offers pristine nature, ancient monasteries, and profound spiritual experiences.",
     topHighlights: [
       "Tiger's Nest Monastery (Paro Taktsang)",
@@ -350,7 +350,7 @@ const DESTINATION_INFO: Record<string, {
   "maldives": {
     title: "Maldives",
     subtitle: "Crystal Waters",
-    image: "/images/maldives.jpg",
+    image: "/countries/maldives.jpg",
     description: "Experience paradise on Earth in this tropical island nation. The Maldives dazzles with its crystal-clear waters, vibrant coral reefs, and luxurious overwater villas.",
     topHighlights: [
       "Overwater bungalows and luxury resorts",
@@ -413,7 +413,7 @@ const DESTINATION_INFO: Record<string, {
   "kerala": {
     title: "Kerala",
     subtitle: "God's Own Country",
-    image: "/images/kerala.jpg",
+    image: "/countries/kerala.jpg",
     description: "Discover India's tropical paradise with serene backwaters, lush greenery, and rich cultural traditions. Kerala offers a perfect blend of relaxation and exploration.",
     topHighlights: [
       "Houseboat cruises in backwaters",
@@ -476,7 +476,7 @@ const DESTINATION_INFO: Record<string, {
   "assam": {
     title: "Assam",
     subtitle: "Tea Gardens & Wildlife",
-    image: "/images/assam.jpg",
+    image: "/countries/assam.jpg",
     description: "Explore the land of tea gardens and one-horned rhinos. Assam enchants with its verdant landscapes, diverse wildlife, and vibrant Assamese culture.",
     topHighlights: [
       "Kaziranga National Park (UNESCO Site)",
@@ -539,7 +539,7 @@ const DESTINATION_INFO: Record<string, {
   "himachal": {
     title: "Himachal",
     subtitle: "Mountain Retreat",
-    image: "/images/himachal.jpg",
+    image: "/countries/himachal.jpg",
     description: "Escape to the mountains of Himachal Pradesh. From adventure sports to spiritual retreats, this Himalayan state offers breathtaking views and peaceful sanctuaries.",
     topHighlights: [
       "Shimla - Queen of Hills",
@@ -602,7 +602,7 @@ const DESTINATION_INFO: Record<string, {
   "meghalaya": {
     title: "Meghalaya",
     subtitle: "Abode of Clouds",
-    image: "/images/meghalaya.jpg",
+    image: "/countries/meghalaya.jpg",
     description: "Visit one of the wettest places on Earth, where nature's beauty knows no bounds. Meghalaya captivates with its living root bridges, waterfalls, and misty hills.",
     topHighlights: [
       "Living root bridges of Cherrapunji",
@@ -665,7 +665,7 @@ const DESTINATION_INFO: Record<string, {
   "mysore": {
     title: "Mysore",
     subtitle: "Royal Heritage",
-    image: "/images/mysore.jpg",
+    image: "/countries/mysore.jpg",
     description: "Step into royal splendor in this historic city of palaces. Mysore charms visitors with its rich heritage, magnificent architecture, and cultural traditions.",
     topHighlights: [
       "Mysore Palace - architectural marvel",
@@ -728,7 +728,7 @@ const DESTINATION_INFO: Record<string, {
   "rajasthan": {
     title: "Rajasthan",
     subtitle: "Desert Majesty",
-    image: "/images/rajasthan.jpg",
+    image: "/countries/rajasthan.jpg",
     description: "Experience the grandeur of India's desert kingdom. Rajasthan dazzles with its majestic forts, vibrant culture, and tales of royal valor.",
     topHighlights: [
       "Magnificent forts and palaces",
@@ -791,7 +791,7 @@ const DESTINATION_INFO: Record<string, {
   "uttarakhand": {
     title: "Uttarakhand",
     subtitle: "Spiritual Heights",
-    image: "/images/uttarakhand.jpg",
+    image: "/countries/uttarakhand.jpg",
     description: "Find spiritual solace in the land of gods. Uttarakhand offers sacred pilgrimage sites, yoga retreats, and stunning Himalayan vistas.",
     topHighlights: [
       "Char Dham pilgrimage circuit",
@@ -854,7 +854,7 @@ const DESTINATION_INFO: Record<string, {
   "ladakh": {
     title: "Ladakh",
     subtitle: "Cold Desert Beauty",
-    image: "/images/ladakh.jpg",
+    image: "/countries/ladakh.jpg",
     description: "Journey to the roof of the world in this high-altitude desert. Ladakh mesmerizes with its stark beauty, Buddhist monasteries, and adventure opportunities.",
     topHighlights: [
       "Pangong Lake - stunning blue waters",
@@ -917,7 +917,7 @@ const DESTINATION_INFO: Record<string, {
   "italy": {
     title: "Italy",
     subtitle: "Art, Food & Historic Cities",
-    image: "/images/italy.jpg",
+    image: "/countries/italy.jpg",
     description: "Italy is famed for its art, food, historic cities and coastal regions. From the ancient ruins of Rome to the romantic canals of Venice and the rolling hills of Tuscany, Italy offers timeless beauty.",
     topHighlights: [
       "Colosseum and Roman Forum",
@@ -980,7 +980,7 @@ const DESTINATION_INFO: Record<string, {
   "jamaica": {
     title: "Jamaica",
     subtitle: "Reggae, Beaches & Culture",
-    image: "/images/jamaica.jpg",
+    image: "/countries/jamiaca.jpg",
     description: "Jamaica offers reggae culture, mountain scenery and Caribbean beaches. Experience the vibrant spirit of the island through its music, cuisine, and warm hospitality.",
     topHighlights: [
       "Negril's Seven Mile Beach",
@@ -1043,7 +1043,7 @@ const DESTINATION_INFO: Record<string, {
   "france": {
     title: "France",
     subtitle: "Art, Cuisine & Wine",
-    image: "/images/france.jpg",
+    image: "/countries/france.jpg",
     description: "France offers world-class art, cuisine, vineyards, coastal regions and historic towns.",
     topHighlights: [
       "Eiffel Tower and Paris landmarks",
@@ -1074,7 +1074,7 @@ const DESTINATION_INFO: Record<string, {
   "japan": {
     title: "Japan",
     subtitle: "Tradition & Technology",
-    image: "/images/japan.jpg",
+    image: "/countries/japan.jpg",
     description: "Japan mixes ancient traditions and cutting-edge modern culture from Tokyo to Kyoto.",
     topHighlights: [
       "Tokyo's vibrant districts and tech",
@@ -1105,7 +1105,7 @@ const DESTINATION_INFO: Record<string, {
   "turkey": {
     title: "Türkiye",
     subtitle: "East Meets West",
-    image: "/images/turkey.jpg",
+    image: "/countries/turkey.jpg",
     description: "Türkiye bridges Europe and Asia with rich history, bazaars and unique landscapes.",
     topHighlights: [
       "Hagia Sophia and Blue Mosque",
@@ -1136,7 +1136,7 @@ const DESTINATION_INFO: Record<string, {
   "china": {
     title: "China",
     subtitle: "Ancient & Modern",
-    image: "/images/china.jpg",
+    image: "/countries/china.jpg",
     description: "China is vast, with dynastic history, iconic landmarks and diverse regions.",
     topHighlights: [
       "Great Wall of China",
@@ -1167,7 +1167,7 @@ const DESTINATION_INFO: Record<string, {
   "greece": {
     title: "Greece",
     subtitle: "Islands & History",
-    image: "/images/greece.jpg",
+    image: "/countries/greece.jpg",
     description: "Greece combines ancient ruins, islands and Mediterranean cuisine.",
     topHighlights: [
       "Acropolis and Parthenon",
@@ -1198,7 +1198,7 @@ const DESTINATION_INFO: Record<string, {
   "germany": {
     title: "Germany",
     subtitle: "Culture & Castles",
-    image: "/images/germany.jpg",
+    image: "/countries/germany.webp",
     description: "Germany offers historic cities, alpine scenery and strong cultural traditions.",
     topHighlights: [
       "Berlin Wall and Brandenburg Gate",
@@ -1229,7 +1229,7 @@ const DESTINATION_INFO: Record<string, {
   "netherlands": {
     title: "Netherlands",
     subtitle: "Canals & Culture",
-    image: "/images/netherlands.jpg",
+    image: "/countries/netherlands.avif",
     description: "The Netherlands is known for canals, cycling, tulips and compact, walkable cities.",
     topHighlights: [
       "Amsterdam canal cruises",
@@ -1260,7 +1260,7 @@ const DESTINATION_INFO: Record<string, {
   "saudi-arabia": {
     title: "Saudi Arabia",
     subtitle: "Heritage & Modernity",
-    image: "/images/saudi-arabia.jpg",
+    image: "/countries/saudi.jpg",
     description: "Saudi Arabia offers historic sites, Red Sea coastlines and desert landscapes.",
     topHighlights: [
       "AlUla ancient rock formations",
@@ -1291,7 +1291,7 @@ const DESTINATION_INFO: Record<string, {
   "vietnam": {
     title: "Vietnam",
     subtitle: "Culture & Nature",
-    image: "/images/vietnam.jpg",
+    image: "/countries/vietnam.webp",
     description: "Vietnam stretches from rice terraces to vibrant cities and tropical coasts.",
     topHighlights: [
       "Ha Long Bay cruises",
@@ -1322,7 +1322,7 @@ const DESTINATION_INFO: Record<string, {
   "india": {
     title: "India",
     subtitle: "Diversity & Heritage",
-    image: "/images/india.jpg",
+    image: "/countries/india.jpg",
     description: "India offers vast cultural diversity, historic sites and varied landscapes.",
     topHighlights: [
       "Taj Mahal wonder of the world",
@@ -1353,7 +1353,7 @@ const DESTINATION_INFO: Record<string, {
   "singapore": {
     title: "Singapore",
     subtitle: "Garden City",
-    image: "/images/singapore.jpg",
+    image: "/countries/singapore.webp",
     description: "City-state with urban nature, world-class dining and family attractions.",
     topHighlights: [
       "Marina Bay Sands and skyline",
@@ -1384,7 +1384,7 @@ const DESTINATION_INFO: Record<string, {
   "south-africa": {
     title: "South Africa",
     subtitle: "Safari & Scenery",
-    image: "/images/south-africa.jpg",
+    image: "/countries/southafrica.jpg",
     description: "South Africa is renowned for safaris, dramatic coastlines and vibrant cities.",
     topHighlights: [
       "Kruger National Park safaris",
@@ -1415,7 +1415,7 @@ const DESTINATION_INFO: Record<string, {
   "australia": {
     title: "Australia",
     subtitle: "Reefs & Outback",
-    image: "/images/australia.jpg",
+    image: "/countries/australia.webp",
     description: "Australia features reefs, coasts, Outback and cosmopolitan cities.",
     topHighlights: [
       "Great Barrier Reef diving",
@@ -1446,7 +1446,7 @@ const DESTINATION_INFO: Record<string, {
   "new-zealand": {
     title: "New Zealand",
     subtitle: "Adventure Paradise",
-    image: "/images/new-zealand.jpg",
+    image: "/countries/newzealand.webp",
     description: "New Zealand is famed for fjords, mountains and compact, dramatic scenery.",
     topHighlights: [
       "Milford Sound fjord cruises",
@@ -1477,7 +1477,7 @@ const DESTINATION_INFO: Record<string, {
   "canada": {
     title: "Canada",
     subtitle: "Wilderness & Cities",
-    image: "/images/canada.jpg",
+    image: "/countries/canada.webp",
     description: "Canada offers vast wilderness, national parks and diverse cities.",
     topHighlights: [
       "Canadian Rockies and Banff",
@@ -1508,7 +1508,7 @@ const DESTINATION_INFO: Record<string, {
   "malaysia": {
     title: "Malaysia",
     subtitle: "Diversity & Nature",
-    image: "/images/malaysia.jpg",
+    image: "/countries/malaysia.webp",
     description: "Malaysia combines cities, islands and rainforest biodiversity.",
     topHighlights: [
       "Kuala Lumpur Petronas Towers",
@@ -1539,7 +1539,7 @@ const DESTINATION_INFO: Record<string, {
   "south-korea": {
     title: "South Korea",
     subtitle: "K-Culture & Tradition",
-    image: "/images/south-korea.jpg",
+    image: "/countries/southkorea.jpg",
     description: "South Korea offers high-energy cities, coastal islands and mountain trails.",
     topHighlights: [
       "Seoul modern metropolis",
@@ -1570,7 +1570,7 @@ const DESTINATION_INFO: Record<string, {
   "morocco": {
     title: "Morocco",
     subtitle: "Medinas & Desert",
-    image: "/images/morocco.jpg",
+    image: "/countries/morocco.avif",
     description: "Morocco is known for medinas, desert landscapes and Atlas mountain scenery.",
     topHighlights: [
       "Marrakech souks and Jemaa el-Fnaa",
@@ -1601,7 +1601,7 @@ const DESTINATION_INFO: Record<string, {
   "switzerland": {
     title: "Switzerland",
     subtitle: "Alpine Paradise",
-    image: "/images/switzerland.jpg",
+    image: "/countries/switzerland.jpg",
     description: "Switzerland offers pristine Alps, charming villages, world-class skiing, and chocolate-making traditions in a breathtaking mountain setting.",
     topHighlights: [
       "Jungfraujoch - Top of Europe",
@@ -1648,7 +1648,7 @@ const DESTINATION_INFO: Record<string, {
   "egypt": {
     title: "Egypt",
     subtitle: "Ancient Wonders",
-    image: "/images/egypt.jpg",
+    image: "/countries/egypt.avif",
     description: "Egypt is home to millennia-old monuments, Nile cruises and Red Sea diving.",
     topHighlights: [
       "Pyramids of Giza and Sphinx",
@@ -1679,7 +1679,7 @@ const DESTINATION_INFO: Record<string, {
   "tunisia": {
     title: "Tunisia",
     subtitle: "Mediterranean Charm",
-    image: "/images/tunisia.jpg",
+    image: "/countries/tunisia.webp",
     description: "Tunisia mixes Mediterranean beaches, Roman ruins and Sahara oases.",
     topHighlights: [
       "Carthage ancient ruins",
@@ -1710,7 +1710,7 @@ const DESTINATION_INFO: Record<string, {
   "qatar": {
     title: "Qatar",
     subtitle: "Modern Marvel",
-    image: "/images/qatar.jpg",
+    image: "/countries/qatar.jpg",
     description: "Qatar mixes modern architecture, museums and desert experiences.",
     topHighlights: [
       "Museum of Islamic Art",
@@ -1741,7 +1741,7 @@ const DESTINATION_INFO: Record<string, {
   "jordan": {
     title: "Jordan",
     subtitle: "Ancient Petra",
-    image: "/images/jordan.jpg",
+    image: "/countries/jordan.webp",
     description: "Jordan is famed for Petra, Wadi Rum and the Dead Sea's unique experiences.",
     topHighlights: [
       "Petra ancient city",
@@ -1772,7 +1772,7 @@ const DESTINATION_INFO: Record<string, {
   "czechia": {
     title: "Czechia",
     subtitle: "Medieval Charm",
-    image: "/images/czechia.jpg",
+    image: "/countries/czechia.jpeg",
     description: "Czechia (Prague) offers medieval architecture, castles and a rich cultural scene.",
     topHighlights: [
       "Prague Castle and Charles Bridge",
@@ -1803,7 +1803,7 @@ const DESTINATION_INFO: Record<string, {
   "poland": {
     title: "Poland",
     subtitle: "History & Nature",
-    image: "/images/poland.jpg",
+    image: "/countries/poland.avif",
     description: "Poland features historic cities, mountain ranges and Baltic coastlines.",
     topHighlights: [
       "Kraków Old Town and Wawel Castle",
@@ -1834,7 +1834,7 @@ const DESTINATION_INFO: Record<string, {
   "hungary": {
     title: "Hungary",
     subtitle: "Thermal Baths",
-    image: "/images/hungary.jpg",
+    image: "/countries/hungary.jpg",
     description: "Hungary centers on Budapest's thermal baths, Danube views and historic architecture.",
     topHighlights: [
       "Budapest thermal baths",
@@ -1865,7 +1865,7 @@ const DESTINATION_INFO: Record<string, {
   "croatia": {
     title: "Croatia",
     subtitle: "Adriatic Jewel",
-    image: "/images/croatia.jpg",
+    image: "/countries/coratia.jpg",
     description: "Croatia is famed for Adriatic coastlines, medieval towns and island hopping.",
     topHighlights: [
       "Dubrovnik Old Town walls",
@@ -1896,7 +1896,7 @@ const DESTINATION_INFO: Record<string, {
   "belgium": {
     title: "Belgium",
     subtitle: "Chocolate & Beer",
-    image: "/images/belgium.jpg",
+    image: "/countries/belgium.jpg",
     description: "Belgium offers historic cities, chocolate, beer culture and UNESCO towns.",
     topHighlights: [
       "Brussels Grand Place and Manneken Pis",
@@ -1927,7 +1927,7 @@ const DESTINATION_INFO: Record<string, {
   "ireland": {
     title: "Ireland",
     subtitle: "Emerald Isle",
-    image: "/images/ireland.jpg",
+    image: "/countries/ireland.webp",
     description: "Ireland features green landscapes, dramatic coasts and lively cultural pubs.",
     topHighlights: [
       "Cliffs of Moher dramatic views",
@@ -1958,7 +1958,7 @@ const DESTINATION_INFO: Record<string, {
   "denmark": {
     title: "Denmark",
     subtitle: "Hygge & Design",
-    image: "/images/denmark.jpg",
+    image: "/countries/denmark.jpg",
     description: "Denmark mixes hygge culture, coastal islands and modern Copenhagen design.",
     topHighlights: [
       "Copenhagen Nyhavn and Tivoli",
@@ -1989,7 +1989,7 @@ const DESTINATION_INFO: Record<string, {
   "sweden": {
     title: "Sweden",
     subtitle: "Scandinavian Beauty",
-    image: "/images/sweden.jpg",
+    image: "/countries/sweden.webp",
     description: "Sweden has expansive forests, archipelagos and modern Scandinavian cities.",
     topHighlights: [
       "Stockholm archipelago beauty",
@@ -2020,7 +2020,7 @@ const DESTINATION_INFO: Record<string, {
   "norway": {
     title: "Norway",
     subtitle: "Fjords & Northern Lights",
-    image: "/images/norway.jpg",
+    image: "/countries/Norway.jpg",
     description: "Norway is known for fjords, northern lights and dramatic coastal scenery.",
     topHighlights: [
       "Fjord cruises and Geirangerfjord",
@@ -2051,7 +2051,7 @@ const DESTINATION_INFO: Record<string, {
   "romania": {
     title: "Romania",
     subtitle: "Castles & Carpathians",
-    image: "/images/romania.jpg",
+    image: "/countries/romania.jpg",
     description: "Romania offers castles, Transylvanian landscapes and Black Sea coasts.",
     topHighlights: [
       "Bran Castle (Dracula's Castle)",
@@ -2082,7 +2082,7 @@ const DESTINATION_INFO: Record<string, {
   "bulgaria": {
     title: "Bulgaria",
     subtitle: "Black Sea & Mountains",
-    image: "/images/bulgaria.jpg",
+    image: "/countries/bulgaria.jpg",
     description: "Bulgaria features Black Sea beaches, ski resorts and historic towns.",
     topHighlights: [
       "Sunny Beach Black Sea resort",
@@ -2113,7 +2113,7 @@ const DESTINATION_INFO: Record<string, {
   "dominican-republic": {
     title: "Dominican Republic",
     subtitle: "Caribbean Paradise",
-    image: "/images/dominican-republic.jpg",
+    image: "/countries/dominican.jpg",
     description: "Caribbean beaches, all-inclusive resorts and vibrant culture define the Dominican Republic.",
     topHighlights: [
       "Punta Cana pristine beaches",
@@ -2144,7 +2144,7 @@ const DESTINATION_INFO: Record<string, {
   "cuba": {
     title: "Cuba",
     subtitle: "Vintage Charm",
-    image: "/images/cuba.jpg",
+    image: "/countries/cuba.jpg",
     description: "Cuba is known for vintage cars, vibrant music, historic Havana and Caribbean beaches.",
     topHighlights: [
       "Havana colonial architecture",
@@ -2175,7 +2175,7 @@ const DESTINATION_INFO: Record<string, {
   "brazil": {
     title: "Brazil",
     subtitle: "Carnival & Amazon",
-    image: "/images/brazil.jpg",
+    image: "/countries/brazil.jpg",
     description: "Brazil offers Amazon rainforest, iconic Rio festivals, and long Atlantic beaches.",
     topHighlights: [
       "Rio de Janeiro and Carnival",
@@ -2206,7 +2206,7 @@ const DESTINATION_INFO: Record<string, {
   "argentina": {
     title: "Argentina",
     subtitle: "Tango & Patagonia",
-    image: "/images/argentina.jpg",
+    image: "/countries/argentina.webp",
     description: "Argentina mixes Buenos Aires culture, Patagonian landscapes and wine regions.",
     topHighlights: [
       "Buenos Aires tango culture",
@@ -2237,7 +2237,7 @@ const DESTINATION_INFO: Record<string, {
   "portugal": {
     title: "Portugal",
     subtitle: "Coast & Culture",
-    image: "/images/portugal.jpg",
+    image: "/countries/portugal.jpg",
     description: "Portugal features coastal towns, historic Lisbon and Douro wine country.",
     topHighlights: [
       "Lisbon's hills and trams",
@@ -2268,7 +2268,7 @@ const DESTINATION_INFO: Record<string, {
   "austria": {
     title: "Austria",
     subtitle: "Music & Mountains",
-    image: "/images/austria.jpg",
+    image: "/countries/austria.jpg",
     description: "Austria offers Alpine scenery, classical music heritage and charming cities.",
     topHighlights: [
       "Vienna imperial palaces and opera",
@@ -2299,7 +2299,7 @@ const DESTINATION_INFO: Record<string, {
   "mexico": {
     title: "Mexico",
     subtitle: "Culture & Beaches",
-    image: "/images/mexico.jpg",
+    image: "/countries/mexico.avif",
     description: "Mexico has rich heritage, beaches, and vibrant culinary and arts scenes.",
     topHighlights: [
       "Cancún Caribbean beaches",
@@ -2330,7 +2330,7 @@ const DESTINATION_INFO: Record<string, {
   "spain": {
     title: "Spain",
     subtitle: "Tapas & Fiestas",
-    image: "/images/spain.jpg",
+    image: "/countries/spain.webp",
     description: "Spain offers diverse regions, tapas culture, historic cities and beaches.",
     topHighlights: [
       "Barcelona Gaudí architecture",
